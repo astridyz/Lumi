@@ -18,15 +18,22 @@ function API.wrap(Client : Class): API
     --// Private
     local TOKEN;
 
-    --// Public
+    local function send(method : ApiRequest, url : ApiRequest, headers : Headers): ({}?, Error?)
+        local success, response = pcall(function()
+            return net.request {url = url, method = method, headers = headers } :: httpResponse
+        end)
 
-    function self:authenticate(token : Token): ({}?, Error?)
-        TOKEN = token
-        return self:getCurrentUser()
+        local data = net.jsonDecode(response.body) :: RequestResponse
+        print(data)
+
+		if success and response.ok then
+            return data, nil
+        else
+            return nil, net.jsonDecode(response.body) :: Error
+        end
     end
 
-    function self:request(method : ApiRequest, endpoint : ApiRequest): ({}?, Error?)
-
+    local function request(method : ApiRequest, endpoint : ApiRequest): ({}?, Error?)
         assert(TOKEN ~= nil, 'No bot token available')
 
         local url = API_URL .. endpoint
@@ -37,60 +44,57 @@ function API.wrap(Client : Class): API
             ['Content-Type'] = 'application/json'
         } :: Headers
 
-        return self:commit(method, url, request)
+        return send(method, url, request)
     end
 
-    function self:commit(method : ApiRequest, url : ApiRequest, headers : Headers ): ({}?, Error?)
-        local success, response = pcall(function()
-            return net.request {
-                url = url,
-                method = method,
-                headers = headers
-            }
-        end)
+    --// Public
 
-        local data = response.ok and net.jsonDecode(response.body) or nil
-
-		if success and data then
-            print('Sucess ', data)
-            return data, nil
-        else
-            print('RIP ', data)
-            return nil, net.jsonDecode(response.body) :: Error
-        end
+    function self:authenticate(token : Token): ({}?, Error?)
+        TOKEN = token
+        return self:getCurrentUser()
     end
 
     --// Base requests
 
     function self:getCurrentUser()
-        return self:request('GET', '/users/@me')
+        return request('GET', '/users/@me')
     end
 
     function self:getGateway()
-        return self:request("GET", "/gateway")
+        return request("GET", "/gateway")
     end
     
     function self:getGatewayBot()
-        return self:request("GET", "/gateway")
+        return request("GET", "/gateway")
     end
 
-    return self
+    return self :: API
 end
 
-type ApiRequest = string
-type Error = {
+export type ApiRequest = string
+
+export type Error = {
     message : string,
     code : number
 }
+
+export type httpResponse = {
+    ['ok'] : boolean,
+    ['body'] : string
+}
+
+export type RequestResponse = {[string] : any}
 
 export type Headers = {
     {[number] : string}
 }
 
 export type API = Class & {
-    authenticate : (Token) -> ({}?, Error?),
-    Request : (ApiRequest, ApiRequest) -> ({}?, Error?),
-    Commit : (ApiRequest, ApiRequest, Headers) -> ({}?, Error?)
+    authenticate : (Token : string) -> ({}?, Error?),
+    --// Base methods
+    getCurrentUser : () -> ({}?, Error?),
+    getGatewayBot : () -> ({}?, Error?),
+    getGateway : () -> ({}?, Error?)
 }
 
 export type Token = string

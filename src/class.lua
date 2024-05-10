@@ -25,7 +25,7 @@ function Class.new(): Class
 end
 
 export type ClassPrototype = {
-    extends : (Class) -> Class
+    extends : (SubClass : Class) -> Class
 }
 
 export type ClassConstructor = typeof(setmetatable(

@@ -42,7 +42,7 @@ function Client.wrap(): Client
 end
 
 export type Client = Class & {
-    login : (Token) -> ()
+    login : (Token : Token) -> {[string] : any}
 }
 
 type Class = Class.Class
