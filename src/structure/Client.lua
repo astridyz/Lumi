@@ -2,7 +2,8 @@
 
 local Class = require '../Class'
 local Rest = require 'API/Rest'
-local Gateway = require 'Gateway'
+local Gateway = require 'API/Gateway'
+local Constants = require '../Constants'
 
 --// This
 
@@ -32,15 +33,17 @@ function Client.wrap(): Client
             error('Error getting gateway: ' .. err.messag)
         end
 
-        WebSocket = Gateway.wrap(Data.url, '/?v=10&encoding=json')
+        WebSocket = Gateway.wrap(Data.url, Constants.GATEWAY_PATH)
         WebSocket:keep()
+        WebSocket:handshake(TOKEN)
     end
 
     return self
 end
 
 export type Client = Class & {
-    login : (Token : Token) -> ({[string] : any}?, Error?)
+    login : (Token : Token) -> ({[string] : any}?, Error?),
+    connect : () -> ()
 }
 
 type Error = Rest.Error

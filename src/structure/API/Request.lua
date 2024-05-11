@@ -1,12 +1,8 @@
 --// Requires
 
 local Class = require '../../Class'
-local net = require '@lune/net' :: any
-
---// Constants
-
-local API_URL = 'https://discord.com/api/v10'
-local USER_AGENT = string.format('DiscordBot (%s, %s)', 'https://github.com/astridyz/Luthe', '0.1.0')
+local net = require '@lune/net'
+local Constants = require '../../Constants'
 
 --// This
 
@@ -21,14 +17,14 @@ function Request.wrap(Token : Token): Request
     local TOKEN = Token
 
     local HEADERS = {
-        ['User-Agent'] = USER_AGENT,
+        ['User-Agent'] = Constants.USER_AGENT,
         ['Authorization'] = 'Bot ' .. TOKEN,
         ['Content-Type'] = 'application/json'
     } :: Headers
 
     local function attempt()
         local success, response = pcall(function()
-            return net.request { url = URL, method = METHOD, headers = HEADERS } :: httpResponse
+            return net.request {method = METHOD, headers = HEADERS, url = URL} :: FetchResponse
         end)
 
         local data = net.jsonDecode(response.body) :: RequestResponse
@@ -45,7 +41,7 @@ function Request.wrap(Token : Token): Request
     function self:request(method : RestRequest, endpoint : RestRequest)
         assert(TOKEN ~= nil, 'No bot token available')
 
-        URL = API_URL .. endpoint
+        URL = Constants.API_URL .. endpoint
         METHOD = method
 
         return attempt()
@@ -60,10 +56,6 @@ export type Request = Class & {
     request : (method : RestRequest, endpoint : RestRequest) -> ({}?, Error?),
 }
 
-export type Headers = {
-    {[number] : string}
-}
-
 export type Token = string
 
 export type Error = {
@@ -71,13 +63,12 @@ export type Error = {
     code : number
 }
 
-export type httpResponse = {
-    ['ok'] : boolean,
-    ['body'] : string
-}
-
 export type RequestResponse = {[string] : any}
 
 type Class = Class.Class
+
+type Headers = net.HttpHeaderMap
+type HttpResponse = net.ServeResponse
+type FetchResponse = net.FetchResponse
 
 return Request

@@ -48,11 +48,9 @@ export type API = Class & {
     getGateway : () -> ({}?, Error?)
 }
 
-export type RequestResponse = Request.RequestResponse
 export type Token = Request.Token
 export type Error = Request.Error
 
 type Class = Class.Class
-type httpResponse = Request.httpResponse
 
 return Rest
