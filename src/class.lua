@@ -3,12 +3,16 @@ local Class = {}
 function Class.new(): Class
     local self = {} --// Public items
 
-    function self:extends(subClass : SubClassConstructor)
-        local meta = getmetatable(self)
+    function self.extends(subClass : SubClassConstructor)
         local classObject = subClass.wrap()
 
-        meta.__index = classObject
-        meta.__metatable = 'locked'
+        for index, value in pairs(classObject) do
+            if type(value) ~= 'function' then
+                continue
+            end
+
+            self[index] = value
+        end
 
         return self
     end
@@ -17,15 +21,17 @@ function Class.new(): Class
 
     local meta = {}
 
-    function meta:__tostring()
+    function meta.__tostring()
         return 'Class ' .. self.class
     end
+
+    meta.__metatable = 'locked'
 
     return setmetatable(self, meta)
 end
 
 export type ClassPrototype = {
-    extends : (SubClass : Class) -> Class
+    extends : (subClass : SubClassConstructor) -> {}
 }
 
 export type ClassConstructor = typeof(setmetatable(

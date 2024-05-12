@@ -8,13 +8,15 @@ local Constants = require '../../Constants'
 
 local Request = {}
 
-function Request.wrap(Token : Token): Request
+function Request.wrap(Token : Token, method, endpoint): Request
     local self = Class()
 
     --// Private
-    local METHOD;
-    local URL;
+    local METHOD = method
+    local ENDPOINT = endpoint
     local TOKEN = Token
+
+    local URL;
 
     local HEADERS = {
         ['User-Agent'] = Constants.USER_AGENT,
@@ -38,16 +40,14 @@ function Request.wrap(Token : Token): Request
 
     --// Public
 
-    function self:request(method : RestRequest, endpoint : RestRequest)
-        assert(TOKEN ~= nil, 'No bot token available')
-
-        URL = Constants.API_URL .. endpoint
-        METHOD = method
-
+    function self.request()
+        assert(Token, 'Attempt to do a API request without bot token')
+        URL = Constants.API_URL .. ENDPOINT
+        
         return attempt()
     end
 
-    return self
+    return self.request()
 end
 
 export type RestRequest = string

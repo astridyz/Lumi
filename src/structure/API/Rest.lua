@@ -7,7 +7,7 @@ local Request = require 'Request'
 
 local Rest = {}
 
-function Rest.wrap(Client : Class): API
+function Rest.wrap(): API
     local self = Class()
 
     --// Private
@@ -15,7 +15,7 @@ function Rest.wrap(Client : Class): API
 
     --// Public
 
-    function self:authenticate(token : Token): ({}?, Error?)
+    function self.authenticate(token : Token): ({}?, Error?)
         TOKEN = token
         return self:getCurrentUser()
     end
@@ -23,18 +23,15 @@ function Rest.wrap(Client : Class): API
     --// Base requests
 
     function self:getCurrentUser()
-        local result = Request.wrap(TOKEN)
-        return result:request('GET', '/users/@me')
+        return Request.wrap(TOKEN, 'GET', '/users/@me')
     end
 
     function self:getGateway()
-        local result = Request.wrap(TOKEN)
-        return result:request('GET', '/gateway')
+        return Request.wrap(TOKEN, 'GET', '/gateway')
     end
     
     function self:getGatewayBot()
-        local result = Request.wrap(TOKEN)
-        return result:request('GET', '/gateway/bot')
+        return Request.wrap(TOKEN, 'GET', '/gateway/bot')
     end
 
     return self :: API
