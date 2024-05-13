@@ -1,3 +1,4 @@
+--!strict
 --// Requires
 
 local Class = require '../Class'
@@ -6,8 +7,8 @@ local Class = require '../Class'
 
 local Listen = {}
 
-function Listen.wrap()
-    local self = Class.new()
+function Listen.wrap(): Listener
+    local self = Class.new() :: Listener
 
     local Listening = {}
 
@@ -31,14 +32,12 @@ function Listen.wrap()
         for _, listener in ipairs(listeners) do
             listener(...)
         end
-
-        self.ui = "TESTE"
     end
 
     return self
 end
 
-export type Callback = (any) -> (any)
+export type Callback = (any) -> (any) | nil
 
 export type Listener = Class & {
     listen : (eventName : string | number, callback : Callback) -> (),

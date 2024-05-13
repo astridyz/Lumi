@@ -1,8 +1,8 @@
+--!strict
 --// Requires
 
 local Class = require '../Class'
 local Rest = require 'API/Rest'
-local Listen = require 'Listen'
 local Gateway = require 'API/Gateway'
 local Constants = require '../Constants'
 
@@ -11,14 +11,27 @@ local Constants = require '../Constants'
 local Client = {}
 
 function Client.wrap(): Client
-    local self = Class()
+    local self = Class() :: Client
 
     --// Private
     local TOKEN;
 
     local API = Rest.wrap()
-    local Listener = Listen.wrap()
-    local WebSocket;
+    local WebSocket : Gateway;
+
+    local function reconnect()
+        WebSocket.close()
+        self.connect()
+    end
+
+    local function tryResume(closeCode : number?): ()
+        if Constants.closeCodes[closeCode] then
+            WebSocket.resume()
+            return
+        end
+
+        reconnect()
+    end
 
     --// Public
     function self.login(token : Token)
@@ -29,13 +42,18 @@ function Client.wrap(): Client
     end
 
     function self.connect(): Error?
-        local Data, err = API:getGateway()
-        if err then return err end
+        local Data, err = API.getGateway()
+        if err or not Data then
+            return err
+        end
 
-        WebSocket = Gateway.wrap(Data.url, Constants.GATEWAY_PATH)
-        WebSocket.keep()
-        WebSocket.handshake(TOKEN)
-        WebSocket.initListeners(Listener)
+        WebSocket = Gateway.wrap(
+            Data.url,
+            Constants.GATEWAY_PATH,
+            tryResume,
+            TOKEN
+        )
+        WebSocket.open()
         return
     end
 
@@ -51,6 +69,6 @@ type Error = Rest.Error
 type Token = Rest.Token
 
 type Class = Class.Class
-type Listener = Listen.Listener
+type Gateway = Gateway.Gateway
 
 return Client

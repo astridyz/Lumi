@@ -1,3 +1,4 @@
+--!strict
 --// Requires
 
 local Class = require '../../Class'
@@ -10,19 +11,16 @@ local Listen = require '../Listen'
 
 local Gateway = {}
 
-function Gateway.wrap(host : GatewayLink, path : GatewayLink): Gateway
+function Gateway.wrap(host : GatewayLink, path : GatewayLink, tryResume : resumeFunction, Token : Token): Gateway
     local self = Class().extends(Listen) :: Gateway
 
     --// Private
 
-    local GATEWAY_HOST = host
-    local GATEWAY_PATH = path
-
     local HEARTBEAT_INTERVAL;
-    local SEQUENCE = "null"
+    local SESSION : {URL : string, ID : string};
+    local SEQUENCE : string? | number? = "null"
     local IS_SOCKET_ACTIVE = false
-
-    local Socket;
+    local Socket : WebSocket;
 
     local function startHeartBeatInterval()
         --// Starting heartbeat
@@ -36,13 +34,42 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink): Gateway
     end
 
     local function setupHeartBeat(package : Payload)
-        HEARTBEAT_INTERVAL = package.d.heartbeat_interval
+        HEARTBEAT_INTERVAL = package.d.heartbeat_interval * 10^-3 * .75
         task.spawn(startHeartBeatInterval)
     end
 
-    local function decode(rawPayload : Json) --// TODO: IMPROVE THIS BAGGAGE :c
+    local function decode(rawPayload : Json)
         local package : Payload = net.jsonDecode(rawPayload)
         self.emit(package.op, package)
+    end
+
+    local function initListeners()
+        local Codes = Constants.gatewayCodes
+
+        self.listen(Codes.HELLO, setupHeartBeat)
+        
+        self.listen(Codes.DISPATH, function(package : Payload)
+            
+            if package.t == 'READY' then
+                SESSION = {
+                    ID = package.d.session_id,
+                    URL = package.d.resume_gateway_url
+            }
+            end
+
+            SEQUENCE = package.s
+            return
+        end)
+
+        self.listen(Codes.RECONNECT, function()
+            tryResume(0)
+            return
+        end)
+
+        self.listen(Codes.HEARTBEAT, function()
+            self.send(1, SEQUENCE)
+            return
+        end)
     end
 
     local function process()
@@ -51,7 +78,7 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink): Gateway
 
             if Socket.closeCode then
                 IS_SOCKET_ACTIVE = false
-                error('Socket closed, closeCode: ' .. Socket.closeCode)
+                tryResume(Socket.closeCode)
                 return
             end
                 
@@ -59,15 +86,19 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink): Gateway
             
             if not success or not rawPayload then
                 IS_SOCKET_ACTIVE = false
-                error('Socket closed, closeCode: ' .. Socket.closeCode)
+                tryResume(Socket.closeCode)
+                return
             end
 
-            decode(rawPayload)
+            decode(rawPayload :: Json)
         end
+    end
+    
+    local function handshake()
+        self.send(2, Constants.defaultIdentify(Token))
     end
 
     --// Public
-
     function self.send(opcode : number, data : any)
         assert(Socket ~= nil, 'Attempt to send data without a valid socket')
         return Socket.send(
@@ -75,32 +106,34 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink): Gateway
         )
     end
 
-    function self.keep()
-        local success, webSocket = pcall(net.socket, GATEWAY_HOST .. GATEWAY_PATH)
+    function self.open()
+        local success, webSocket = pcall(net.socket, host .. path)
         assert(success, 'Could not create websocket')
 
         Socket = webSocket
         IS_SOCKET_ACTIVE = true
+
+        initListeners()
         task.spawn(process)
+        handshake()
     end
 
-    function self.handshake(token : Token)
-        self.send(2, Constants.defaultIdentify(token))
+    function self.close()
+        if IS_SOCKET_ACTIVE then
+            Socket.close(1000)
+        end
     end
 
-    function self.initListeners(clientListener : Listener)
-        local Codes = Constants.gatewayCodes
+    function self.resume()
+        assert(not IS_SOCKET_ACTIVE, 'Attempt to resume an active socket')
 
-        self.listen(Codes.HEARTBEAT, setupHeartBeat)
-        
-        self.listen(Codes.DISPATH, function(package : Payload)
-            SEQUENCE = package.s
-            print(package)
-        end)
+        local success, webSocket = pcall(net.socket, SESSION.URL .. path)
+        assert(success, 'Could not create websocket')
 
-        self.listen(Codes.HEARTBEAT, function()
-            self:send(1, SEQUENCE)
-        end)
+        Socket = webSocket
+        IS_SOCKET_ACTIVE = true
+
+        self.send(6, {token = Token, session_id = SESSION.ID, seq = SEQUENCE})
     end
 
     return self
@@ -109,17 +142,20 @@ end
 export type Payload = {
     op : number,
     d : {[any] : any},
-    s : number,
-    t : string
+    s : number?,
+    t : string?
 }
+
+export type resumeFunction = (closeCode : number?) -> ()
 
 export type GatewayLink = string
 
 export type Gateway =  Class & Listener & {
+    open : () -> (),
+    resume : () -> (),
+    close : () -> (),
     send : (opcode : number, data : any) -> (),
-    keep : () -> (),
-    identify : (token : string) -> (),
-    initListeners : (client : Listener) -> ()
+    handshake : () -> ()
 }
 
 export type Json = string

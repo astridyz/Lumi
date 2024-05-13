@@ -1,3 +1,4 @@
+--!strict
 --// Requires
 
 local Class = require '../../Class'
@@ -8,45 +9,46 @@ local Request = require 'Request'
 local Rest = {}
 
 function Rest.wrap(): API
-    local self = Class()
+    local self = Class() :: API
 
     --// Private
     local TOKEN;
 
     --// Public
 
-    function self.authenticate(token : Token): ({}?, Error?)
+    function self.authenticate(token : Token)
         TOKEN = token
-        return self:getCurrentUser()
+        return self.getCurrentUser()
     end
 
     --// Base requests
 
-    function self:getCurrentUser()
+    function self.getCurrentUser()
         return Request.wrap(TOKEN, 'GET', '/users/@me')
     end
 
-    function self:getGateway()
+    function self.getGateway()
         return Request.wrap(TOKEN, 'GET', '/gateway')
     end
     
-    function self:getGatewayBot()
+    function self.getGatewayBot()
         return Request.wrap(TOKEN, 'GET', '/gateway/bot')
     end
 
-    return self :: API
+    return self
 end
 
 export type API = Class & {
-    authenticate : (Token : string) -> ({}?, Error?),
+    authenticate : (Token : string) -> (Data, Error?),
     --// Base methods
-    getCurrentUser : () -> ({}?, Error?),
-    getGatewayBot : () -> ({}?, Error?),
-    getGateway : () -> ({}?, Error?)
+    getCurrentUser : () -> (Data, Error?),
+    getGatewayBot : () -> (Data, Error?),
+    getGateway : () -> (Data, Error?)
 }
 
 export type Token = Request.Token
 export type Error = Request.Error
+export type Data = Request.Data
 
 type Class = Class.Class
 

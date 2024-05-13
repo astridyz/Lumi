@@ -1,3 +1,4 @@
+--!strict
 --// Requires
 
 local Class = require '../../Class'
@@ -8,8 +9,8 @@ local Constants = require '../../Constants'
 
 local Request = {}
 
-function Request.wrap(Token : Token, method, endpoint): Request
-    local self = Class()
+function Request.wrap(Token : Token, method, endpoint): (Data, Error?)
+    local self = Class() :: Request
 
     --// Private
     local METHOD = method
@@ -29,12 +30,12 @@ function Request.wrap(Token : Token, method, endpoint): Request
             return net.request {method = METHOD, headers = HEADERS, url = URL} :: FetchResponse
         end)
 
-        local data = net.jsonDecode(response.body) :: RequestResponse
+        local data = net.jsonDecode(response.body)
 
 		if success and response.ok then
             return data, nil
         else
-            return nil, net.jsonDecode(response.body) :: Error
+            return nil, net.jsonDecode(response.body)
         end
     end
 
@@ -53,7 +54,7 @@ end
 export type RestRequest = string
 
 export type Request = Class & {
-    request : (method : RestRequest, endpoint : RestRequest) -> ({}?, Error?),
+    request : () -> (Data, Error?),
 }
 
 export type Token = string
@@ -62,6 +63,8 @@ export type Error = {
     message : string,
     code : number
 }
+
+export type Data = {[string] : any}
 
 export type RequestResponse = {[string] : any}
 

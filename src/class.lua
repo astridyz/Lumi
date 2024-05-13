@@ -1,7 +1,8 @@
+--!strict
 local Class = {}
 
 function Class.new(): Class
-    local self = {} --// Public items
+    local self = {}
 
     function self.extends(subClass : SubClassConstructor)
         local classObject = subClass.wrap()
@@ -14,24 +15,19 @@ function Class.new(): Class
             self[index] = value
         end
 
-        return self
+        return self :: Class & {[any] : any}
     end
 
     --// Metatables
 
     local meta = {}
-
-    function meta.__tostring()
-        return 'Class ' .. self.class
-    end
-
     meta.__metatable = 'locked'
 
     return setmetatable(self, meta)
 end
 
 export type ClassPrototype = {
-    extends : (subClass : SubClassConstructor) -> {}
+    extends : (subClass : SubClassConstructor) -> Class & {[any] : any}
 }
 
 export type ClassConstructor = typeof(setmetatable(
@@ -43,10 +39,9 @@ export type ClassConstructor = typeof(setmetatable(
 ))
 
 export type Class = typeof(setmetatable({} :: ClassPrototype, {} :: {
-    __tostring : () -> string,
     __metatable : string,
 }))
 
-export type SubClassConstructor = { wrap : (any) -> Class}
+export type SubClassConstructor = { wrap : (any) -> Class & {[any] : any}}
 
-return setmetatable(Class, {__call = function(_) return Class.new() end, __metatable = 'locked'}) :: ClassConstructor
+return setmetatable(Class, {__call = function(_ : any) return Class.new() end, __metatable = 'locked'}) :: ClassConstructor
