@@ -17,21 +17,6 @@ function Client.wrap(): Client
     local TOKEN;
 
     local API = Rest.wrap()
-    local WebSocket : Gateway;
-
-    local function reconnect()
-        WebSocket.close()
-        self.connect()
-    end
-
-    local function tryResume(closeCode : number?): ()
-        if Constants.closeCodes[closeCode] then
-            WebSocket.resume()
-            return
-        end
-
-        reconnect()
-    end
 
     --// Public
     function self.login(token : Token)
@@ -41,20 +26,9 @@ function Client.wrap(): Client
         return API.authenticate(TOKEN)
     end
 
-    function self.connect(): Error?
-        local Data, err = API.getGateway()
-        if err or not Data then
-            return err
-        end
-
-        WebSocket = Gateway.wrap(
-            Data.url,
-            Constants.GATEWAY_PATH,
-            tryResume,
-            TOKEN
-        )
-        WebSocket.open()
-        return
+    function self.connect()
+        local Data, _ = API.getGateway()
+        Gateway.wrap(Data.url, Constants.GATEWAY_PATH, TOKEN)
     end
 
     return self
@@ -62,7 +36,7 @@ end
 
 export type Client = Class & {
     login : (Token : Token) -> ({[string] : any}?, Error?),
-    connect : () -> Error?
+    connect : () -> ()
 }
 
 type Error = Rest.Error

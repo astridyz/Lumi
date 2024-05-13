@@ -9,25 +9,16 @@ local Constants = require '../../Constants'
 
 local Request = {}
 
-function Request.wrap(Token : Token, method, endpoint): (Data, Error?)
+function Request.wrap(token : Token, method : httpMethod, endpoint : urlEnpoint): (Data, Error?)
     local self = Class() :: Request
 
     --// Private
-    local METHOD = method
-    local ENDPOINT = endpoint
-    local TOKEN = Token
-
     local URL;
-
-    local HEADERS = {
-        ['User-Agent'] = Constants.USER_AGENT,
-        ['Authorization'] = 'Bot ' .. TOKEN,
-        ['Content-Type'] = 'application/json'
-    } :: Headers
+    local HEADERS = Constants.defaultHeaders(token)
 
     local function attempt()
         local success, response = pcall(function()
-            return net.request {method = METHOD, headers = HEADERS, url = URL} :: FetchResponse
+            return net.request {method = method, headers = HEADERS, url = URL} :: FetchResponse
         end)
 
         local data = net.jsonDecode(response.body)
@@ -42,8 +33,8 @@ function Request.wrap(Token : Token, method, endpoint): (Data, Error?)
     --// Public
 
     function self.request()
-        assert(Token, 'Attempt to do a API request without bot token')
-        URL = Constants.API_URL .. ENDPOINT
+        assert(token, 'Attempt to do a API request without bot token')
+        URL = Constants.API_URL .. endpoint
         
         return attempt()
     end
@@ -51,7 +42,8 @@ function Request.wrap(Token : Token, method, endpoint): (Data, Error?)
     return self.request()
 end
 
-export type RestRequest = string
+export type httpMethod = net.HttpMethod
+export type urlEnpoint = string
 
 export type Request = Class & {
     request : () -> (Data, Error?),

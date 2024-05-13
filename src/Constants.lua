@@ -1,6 +1,6 @@
 type Token = string
 
-return {
+local Constants = {
     defaultIdentify = function(token : Token): {[string] : string | {[string] : any} | boolean}
         return {
             token = token,
@@ -17,9 +17,15 @@ return {
         }
     end,
 
+    defaultHeaders = function(token : Token)
+        return {
+            ['User-Agent'] = 'DiscordBot (https://github.com/astridyz/Luthe, 0.1.0',
+            ['Authorization'] = 'Bot ' .. token,
+            ['Content-Type'] = 'application/json'
+        }
+    end,
+
     API_URL = 'https://discord.com/api/v10',
-    
-    USER_AGENT = string.format('DiscordBot (https://github.com/astridyz/Luthe, 0.1.0'),
 
     GATEWAY_PATH = '/?v=10&encoding=json/',
 
@@ -42,19 +48,23 @@ return {
     },
 
     closeCodes = {
-        [4000] = true,  -- Unknown error
-        [4001] = true,  -- Unknown opcode
-        [4002] = true,  -- Decode error
-        [4003] = true,  -- Not authenticated
-        [4004] = false, -- Authentication failed
-        [4005] = true,  -- Already authenticated
-        [4007] = true,  -- Invalid seq
-        [4008] = true,  -- Rate limited
-        [4009] = true,  -- Session timed out
-        [4010] = false, -- Invalid shard
-        [4011] = false, -- Sharding required
-        [4012] = false, -- Invalid API version
-        [4013] = false, -- Invalid intent(s)
-        [4014] = false,  -- Disallowed intent(s)
+        [4000] = true,  --// Unknown error
+        [4001] = true,  --// Unknown opcode
+        [4002] = true,  --// Decode error
+        [4003] = true,  --// Not authenticated
+        [4004] = false, --// Authentication failed
+        [4005] = true,  --// Already authenticated
+        [4007] = true,  --// Invalid seq
+        [4008] = true,  --// Rate limited
+        [4009] = true,  --// Session timed out
+        [4010] = false, --// Invalid shard
+        [4011] = false, --// Sharding required
+        [4012] = false, --// Invalid API version
+        [4013] = false, --// Invalid intent(s)
+        [4014] = false, --// Disallowed intent(s)
+        [1000] = true,  --// Reconnect opcode
+        [1001] = true   --// Reconnect opcode
     }
 }
+
+return Constants
