@@ -1,4 +1,4 @@
 return {
-    class = require 'src/Class',
+    class = require 'src/Component',
     client = require 'src/structure/Client'
 }

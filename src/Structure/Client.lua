@@ -1,29 +1,34 @@
 --!strict
---// Requires
+--> Requires
 
-local Class = require '../Class'
+local Component = require '../Component'
 local Rest = require 'API/Rest'
 local Gateway = require 'API/Gateway'
 local Constants = require '../Constants'
 
---// This
+--> This
 
 local Client = {}
 
 function Client.wrap(): Client
-    local self = Class() :: Client
+    local self = Component() :: Client
 
-    --// Private
+    --> Private
     local TOKEN;
 
     local API = Rest.wrap()
 
-    --// Public
-    function self.login(token : Token)
+    --> Public
+    function self.login(token: string)
         assert(token ~= nil, 'No token have been sent.')
         TOKEN = token
 
-        return API.authenticate(TOKEN)
+        local result, err = API.authenticate(TOKEN)
+        if err then
+            error(err.message .. '. Invalid token.')
+        end
+
+        return result
     end
 
     function self.connect()
@@ -34,15 +39,14 @@ function Client.wrap(): Client
     return self
 end
 
-export type Client = Class & {
-    login : (Token : Token) -> ({[string] : any}?, Error?),
-    connect : () -> ()
+export type Client = Instance & {
+    login: (Token: string) -> ({[string]: any}?, Error?),
+    connect: () -> ()
 }
 
 type Error = Rest.Error
-type Token = Rest.Token
 
-type Class = Class.Class
+type Instance = Component.Instance
 type Gateway = Gateway.Gateway
 
 return Client

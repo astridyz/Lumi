@@ -1,28 +1,24 @@
 --!strict
---// Requires
-
-local Class = require '../../Class'
+--> Requires
+local Component = require '../../Component'
 local Request = require 'Request'
 
---// This
-
+--> This
 local Rest = {}
 
 function Rest.wrap(): API
-    local self = Class() :: API
+    local self = Component() :: API
 
-    --// Private
+    --> Private
     local TOKEN;
 
-    --// Public
-
-    function self.authenticate(token : Token)
+    --> Public
+    function self.authenticate(token: string)
         TOKEN = token
         return self.getCurrentUser()
     end
 
-    --// Base requests
-
+    --> Base requests
     function self.getCurrentUser()
         return Request.wrap(TOKEN, 'GET', '/users/@me')
     end
@@ -38,18 +34,17 @@ function Rest.wrap(): API
     return self
 end
 
-export type API = Class & {
-    authenticate : (Token : string) -> (Data, Error?),
-    --// Base methods
-    getCurrentUser : () -> (Data, Error?),
-    getGatewayBot : () -> (Data, Error?),
-    getGateway : () -> (Data, Error?)
+export type API = Instance & {
+    authenticate: (Token: string) -> (Data, Error?),
+    --> Base methods
+    getCurrentUser: () -> (Data, Error?),
+    getGatewayBot: () -> (Data, Error?),
+    getGateway: () -> (Data, Error?)
 }
 
-export type Token = Request.Token
 export type Error = Request.Error
 export type Data = Request.Data
 
-type Class = Class.Class
+type Instance = Component.Instance
 
 return Rest

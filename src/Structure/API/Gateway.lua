@@ -1,27 +1,25 @@
 --!strict
---// Requires
-
-local Class = require '../../Class'
+--> Requires
+local Component = require '../../Component'
 local net = require '@lune/net' 
 local task = require '@lune/task'
 local Constants = require '../../Constants'
 local Listen = require '../Listen'
 local Websocket = require 'Websocket'
 
---// This
-
+--> This
 local Gateway = {}
 
-function Gateway.wrap(host : GatewayLink, path : GatewayLink, Token : Token)
-    local self = Class() :: Gateway
+function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string)
+    local self = Component() :: Gateway
 
-    --// Private
+    --> Private
     local HEARTBEAT_INTERVAL;
-    local SESSION : {URL : string, ID : string};
-    local SEQUENCE : (string | number)? = "null"
-    local Heartbeating : thread;
+    local SESSION: {URL: string, ID: string};
+    local SEQUENCE: (string | number)? = "null"
+    local Heartbeating: thread;
 
-    local Socket : Socket;
+    local Socket: Socket;
     local Listener = Listen.wrap()
 
     local function heartBeat()
@@ -30,20 +28,23 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink, Token : Token)
         end
     end
 
-    local function setupHeartBeat(package : Payload)
+    local function setupHeartBeat(package: Payload)
         HEARTBEAT_INTERVAL = package.d.heartbeat_interval * 10^-3 * .75
-        Heartbeating = task.spawn(heartBeat)
+        if not Heartbeating then Heartbeating = task.spawn(heartBeat) end
     end
 
-    local function tryResume(closeCode : number?)
-        if Constants.closeCodes[closeCode] then --// Resuming
+    local function tryResume(closeCode: number?)
+        print('Trying to resume: ' .. tostring(closeCode))
+        if Constants.CLOSE_CODES[closeCode] then --> Resuming
+            print('Resuming')
             self.resume()
-        else --// Reconnecting
+        else --> Reconnecting
+            print('Reconnecting')
             self.socket()
         end
     end
 
-    local function handleEvents(package : Payload)
+    local function handleEvents(package: Payload)
         if package.t == 'READY' then
             SESSION = {
                 ID = package.d.session_id,
@@ -55,35 +56,30 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink, Token : Token)
     end
 
     local function initListeners()
-        local Codes = Constants.gatewayCodes
+        local Codes = Constants.GATEWAY_CODES
         Listener.listen(Codes.HELLO, setupHeartBeat)
-
         Listener.listen(Codes.RECONNECT, tryResume)
-        
         Listener.listen(Codes.DISPATH, handleEvents)
-
         Listener.listen(Codes.HEARTBEAT, function() Socket.send(1, SEQUENCE); return; end)
     end
     
-    local function handshake(): true?
-        return Socket.send(2, Constants.defaultIdentify(Token))
+    local function handshake()
+        Socket.send(2, Constants.defaultIdentify(Token))
     end
 
-    --// Public
+    --> Public
     function self.socket()
-        if Heartbeating then
-            task.cancel(Heartbeating)
-        end
-
-        if Socket then
-            Socket.close()
-        else
-            initListeners()
-        end
-
+        initListeners()
         Socket = Websocket.wrap(host, path, Listener)
         Socket.open()
         
+        return handshake()
+    end
+
+    function self.reconnect()
+        Socket.close()
+        Socket = Websocket.wrap(host, path, Listener)
+        Socket.open()
         return handshake()
     end
 
@@ -94,25 +90,24 @@ function Gateway.wrap(host : GatewayLink, path : GatewayLink, Token : Token)
         Socket.send(6, {token = Token, session_id = SESSION.ID, seq = SEQUENCE})
     end
 
-    return self.socket()
+    self.socket()
+    return self
 end
 
-export type Gateway =  Class & {
-    socket : () -> (),
-    resume : (closeCode : number?) -> (),
+export type Gateway = Instance & {
+    socket: () -> (),
+    reconnect: () -> (),
+    resume: () -> (),
 }
 
-type Token = string
 type httpSocket = net.WebSocket
 
-type Class = Class.Class
+type Instance = Component.Instance
 type Listener = Listen.Listener
 
 type GatewayLink = Websocket.GatewayLink
 
 type Socket = Websocket.Socket
-type ResumeFunction = Websocket.ResumeFunction
-type Json = Websocket.Json
 type Payload = Websocket.Payload
 
 return Gateway

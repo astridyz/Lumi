@@ -1,31 +1,29 @@
 --!strict
---// Requires
-
-local Class = require '../../Class'
+--> Requires
+local Component = require '../../Component'
 local net = require '@lune/net'
 local task = require '@lune/task'
 local Listen = require '../Listen'
 
---// This
-
+--> This
 local Websocket = {}
 
-function Websocket.wrap(host : GatewayLink, path : GatewayLink, listener : Listener)
-    local self = Class() :: Socket
+function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener)
+    local self = Component() :: Socket
 
-    --// Private
-    local httpSocket : Websocket;
-    local IS_SOCKET_ACTIVE : boolean;
-    local Processing : thread;
+    --> Private
+    local httpSocket: Websocket;
+    local IS_SOCKET_ACTIVE: boolean;
+    local Processing: thread;
     local gatewayListener = listener
     
-    local function decode(rawPayload : Json)
-        local package : Payload = net.jsonDecode(rawPayload)
+    local function decode(rawPayload: string)
+        local package: Payload = net.jsonDecode(rawPayload)
         gatewayListener.emit(package.op, package)
     end
 
     local function process()
-        --// Loop
+        --> Loop
         while IS_SOCKET_ACTIVE and task.wait() do
 
             if httpSocket.closeCode then
@@ -42,19 +40,16 @@ function Websocket.wrap(host : GatewayLink, path : GatewayLink, listener : Liste
                 return
             end
 
-            decode(rawPayload :: Json)
+            decode(rawPayload :: string)
         end
     end
 
-    --// Public
-
-    function self.send(opcode : number, data : any): true?
+    --> Public
+    function self.send(opcode: number, data: any)
         assert(httpSocket, 'Attempt to send data without a valid socket')
         httpSocket.send(
             net.jsonEncode {op = opcode, d = data }
         )
-
-        return true
     end
 
     function self.open()
@@ -82,25 +77,21 @@ function Websocket.wrap(host : GatewayLink, path : GatewayLink, listener : Liste
 end
 
 export type Payload = {
-    op : number,
-    d : {[any] : any},
-    s : number?,
-    t : string?
+    op: number,
+    d: {[any]: any},
+    s: number?,
+    t: string?
 }
 
-export type ResumeFunction = (closeCode : number?) -> ()
-
-export type Socket = Class & {
-    send : (opcode : number, data : any) -> true?,
-    open : () -> (),
-    close : () -> ()
+export type Socket = Instance & {
+    send: (opcode: number, data: any) -> (),
+    open: () -> (),
+    close: () -> ()
 }
 
 export type GatewayLink = string
 
-export type Json = string
-
-type Class = Class.Class
+type Instance = Component.Instance
 type Websocket = net.WebSocket
 type Listener = Listen.Listener
 

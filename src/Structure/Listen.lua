@@ -1,18 +1,18 @@
 --!strict
---// Requires
+--> Requires
 
-local Class = require '../Class'
+local Component = require '../Component'
 
---// This
+--> This
 
 local Listen = {}
 
 function Listen.wrap(): Listener
-    local self = Class.new() :: Listener
+    local self = Component() :: Listener
 
     local Listening = {}
 
-    function self.listen(eventName : string | number, callback : Callback)
+    function self.listen(eventName: string | number, callback: (any) -> any)
         assert(type(eventName) == 'string' or 'number', 'Invalid event name: only strings or numbers')
 
         if not Listening[eventName] then
@@ -22,7 +22,7 @@ function Listen.wrap(): Listener
         table.insert(Listening[eventName], callback)
     end
 
-    function self.emit(eventName : any, ... : any?)
+    function self.emit(eventName: any, ...: any?)
         local listeners = Listening[eventName]
         
         if not listeners then
@@ -37,13 +37,11 @@ function Listen.wrap(): Listener
     return self
 end
 
-export type Callback = (any) -> (any)
-
-export type Listener = Class & {
-    listen : (eventName : string | number, callback : Callback) -> (),
-    emit : (eventName : string | number, arguments : any?) -> ()
+export type Listener = Instance & {
+    listen: (eventName: string | number, callback: (any) -> any) -> (),
+    emit: (eventName: string | number, arguments: any?) -> ()
 }
 
-type Class = Class.Class
+type Instance = Component.Instance
 
 return Listen

@@ -1,18 +1,17 @@
 --!strict
---// Requires
-
-local Class = require '../../Class'
+--> Requires
+local Component = require '../../Component'
 local net = require '@lune/net'
 local Constants = require '../../Constants'
 
---// This
-
+--> This
 local Request = {}
 
-function Request.wrap(token : Token, method : httpMethod, endpoint : urlEnpoint): (Data, Error?)
-    local self = Class() :: Request
+function Request.wrap(token: string, method: httpMethod, endpoint: urlEnpoint)
+    assert(token, 'Attempt to do an API request without a valid bot token')
+    local self = Component() :: Request
 
-    --// Private
+    --> Private
     local URL;
     local HEADERS = Constants.defaultHeaders(token)
 
@@ -30,10 +29,8 @@ function Request.wrap(token : Token, method : httpMethod, endpoint : urlEnpoint)
         end
     end
 
-    --// Public
-
+    --> Public
     function self.request()
-        assert(token, 'Attempt to do a API request without bot token')
         URL = Constants.API_URL .. endpoint
         
         return attempt()
@@ -42,28 +39,26 @@ function Request.wrap(token : Token, method : httpMethod, endpoint : urlEnpoint)
     return self.request()
 end
 
-export type httpMethod = net.HttpMethod
 export type urlEnpoint = string
 
-export type Request = Class & {
-    request : () -> (Data, Error?),
+export type Request = Instance & {
+    request: () -> (Data, Error?),
 }
-
-export type Token = string
 
 export type Error = {
-    message : string,
-    code : number
+    message: string,
+    code: number
 }
 
-export type Data = {[string] : any}
+export type Data = {[string]: any}
 
-export type RequestResponse = {[string] : any}
+export type RequestResponse = {[string]: any}
 
-type Class = Class.Class
+type Instance = Component.Instance
 
 type Headers = net.HttpHeaderMap
 type HttpResponse = net.ServeResponse
 type FetchResponse = net.FetchResponse
+type httpMethod = net.HttpMethod
 
 return Request
