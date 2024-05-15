@@ -17,8 +17,8 @@ function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener
     local Processing: thread;
     local gatewayListener = listener
     
-    local function decode(rawPayload: string)
-        local package: Payload = net.jsonDecode(rawPayload)
+    local function decode(rawData: string)
+        local package = net.jsonDecode(rawData)
         gatewayListener.emit(package.op, package)
     end
 
@@ -32,15 +32,15 @@ function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener
                 return
             end
                 
-            local success, rawPayload = pcall(httpSocket.next)
+            local success, rawData = pcall(httpSocket.next)
             
-            if not success or not rawPayload then
+            if not success or not rawData then
                 IS_SOCKET_ACTIVE = false
                 listener.emit(7, httpSocket.closeCode :: number)
                 return
             end
 
-            decode(rawPayload :: string)
+            decode(rawData :: string)
         end
     end
 
@@ -75,13 +75,6 @@ function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener
 
     return self
 end
-
-export type Payload = {
-    op: number,
-    d: {[any]: any},
-    s: number?,
-    t: string?
-}
 
 export type Socket = Instance & {
     send: (opcode: number, data: any) -> (),

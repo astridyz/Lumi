@@ -12,7 +12,7 @@ function Listen.wrap(): Listener
 
     local Listening = {}
 
-    function self.listen(eventName: string | number, callback: (any) -> any)
+    function self.listen<args...>(eventName: string | number, callback: (args...) -> any)
         assert(type(eventName) == 'string' or 'number', 'Invalid event name: only strings or numbers')
 
         if not Listening[eventName] then
@@ -22,7 +22,7 @@ function Listen.wrap(): Listener
         table.insert(Listening[eventName], callback)
     end
 
-    function self.emit(eventName: any, ...: any?)
+    function self.emit(eventName: any, ...: any)
         local listeners = Listening[eventName]
         
         if not listeners then
@@ -38,7 +38,7 @@ function Listen.wrap(): Listener
 end
 
 export type Listener = Instance & {
-    listen: (eventName: string | number, callback: (any) -> any) -> (),
+    listen: <args...>(eventName: string | number, callback: (args...) -> any) -> (),
     emit: (eventName: string | number, arguments: any?) -> ()
 }
 

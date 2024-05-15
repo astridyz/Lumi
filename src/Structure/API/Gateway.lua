@@ -6,11 +6,12 @@ local task = require '@lune/task'
 local Constants = require '../../Constants'
 local Listen = require '../Listen'
 local Websocket = require 'Websocket'
+local Serializer = require '../Serializer'
 
 --> This
 local Gateway = {}
 
-function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string)
+function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string, Serializer: Serializer)
     local self = Component() :: Gateway
 
     --> Private
@@ -33,6 +34,15 @@ function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string)
         if not Heartbeating then Heartbeating = task.spawn(heartBeat) end
     end
 
+    local function handleDispath(rawData: Payload)
+        if rawData.t == 'READY' then
+            SESSION = {ID = rawData.d.session_id, URL = rawData.d.resume_gateway_url}
+        end
+
+        SEQUENCE = rawData.s;
+        Serializer.data(rawData)
+    end
+
     local function tryResume(closeCode: number?)
         print('Trying to resume: ' .. tostring(closeCode))
         if Constants.CLOSE_CODES[closeCode] then --> Resuming
@@ -44,22 +54,11 @@ function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string)
         end
     end
 
-    local function handleEvents(package: Payload)
-        if package.t == 'READY' then
-            SESSION = {
-                ID = package.d.session_id,
-                URL = package.d.resume_gateway_url
-        }
-        end
-
-        SEQUENCE = package.s;
-    end
-
     local function initListeners()
         local Codes = Constants.GATEWAY_CODES
         Listener.listen(Codes.HELLO, setupHeartBeat)
         Listener.listen(Codes.RECONNECT, tryResume)
-        Listener.listen(Codes.DISPATH, handleEvents)
+        Listener.listen(Codes.DISPATH, handleDispath)
         Listener.listen(Codes.HEARTBEAT, function() Socket.send(1, SEQUENCE); return; end)
     end
     
@@ -104,10 +103,11 @@ type httpSocket = net.WebSocket
 
 type Instance = Component.Instance
 type Listener = Listen.Listener
+type Serializer = Serializer.Serializer
 
 type GatewayLink = Websocket.GatewayLink
 
 type Socket = Websocket.Socket
-type Payload = Websocket.Payload
+type Payload = Serializer.Payload
 
 return Gateway

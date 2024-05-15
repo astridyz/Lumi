@@ -5,6 +5,7 @@ local Component = require '../Component'
 local Rest = require 'API/Rest'
 local Gateway = require 'API/Gateway'
 local Constants = require '../Constants'
+local Serializer = require 'Serializer'
 
 --> This
 
@@ -17,6 +18,7 @@ function Client.wrap(): Client
     local TOKEN;
 
     local API = Rest.wrap()
+    local Serializer = Serializer.wrap()
 
     --> Public
     function self.login(token: string)
@@ -24,16 +26,19 @@ function Client.wrap(): Client
         TOKEN = token
 
         local result, err = API.authenticate(TOKEN)
-        if err then
-            error(err.message .. '. Invalid token.')
-        end
+        assert(not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
 
         return result
     end
 
     function self.connect()
         local Data, _ = API.getGateway()
-        Gateway.wrap(Data.url, Constants.GATEWAY_PATH, TOKEN)
+        Gateway.wrap(Data.url, Constants.GATEWAY_PATH, TOKEN, Serializer)
+    end
+
+    function self.event<args...>(name : string, callback: (args...) -> ())
+        assert(Constants.CLIENT_EVENTS[name], 'Event name not found')
+        Serializer.listen(name, callback)
     end
 
     return self
@@ -41,7 +46,8 @@ end
 
 export type Client = Instance & {
     login: (Token: string) -> ({[string]: any}?, Error?),
-    connect: () -> ()
+    connect: () -> (),
+    event: <args...>(name : string, callback: (args...) -> ()) -> ()
 }
 
 type Error = Rest.Error
