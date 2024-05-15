@@ -1,5 +1,5 @@
 --!strict
---> Requires
+--// Requires
 local Component = require '../../Component'
 local net = require '@lune/net' 
 local task = require '@lune/task'
@@ -8,19 +8,19 @@ local Listen = require '../Listen'
 local Websocket = require 'Websocket'
 local Serializer = require '../Serializer'
 
---> This
+--// This
 local Gateway = {}
 
-function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string, Serializer: Serializer)
+function Gateway.wrap(host: string, path: string, Token: string, Serializer: Serializer)
     local self = Component() :: Gateway
 
-    --> Private
-    local HEARTBEAT_INTERVAL;
-    local SESSION: {URL: string, ID: string};
-    local SEQUENCE: (string | number)? = "null"
-    local Heartbeating: thread;
+    --// Private
+    local HEARTBEAT_INTERVAL
+    local SESSION
+    local SEQUENCE
 
-    local Socket: Socket;
+    local Heartbeating
+    local Socket: Socket
     local Listener = Listen.wrap()
 
     local function heartBeat()
@@ -34,22 +34,19 @@ function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string, Seria
         if not Heartbeating then Heartbeating = task.spawn(heartBeat) end
     end
 
-    local function handleDispath(rawData: Payload)
-        if rawData.t == 'READY' then
-            SESSION = {ID = rawData.d.session_id, URL = rawData.d.resume_gateway_url}
+    local function handleDispath(package: Payload)
+        if package.t == 'READY' then
+            SESSION = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
 
-        SEQUENCE = rawData.s;
-        Serializer.data(rawData)
+        SEQUENCE = package.s;
+        Serializer.data(package)
     end
 
     local function tryResume(closeCode: number?)
-        print('Trying to resume: ' .. tostring(closeCode))
-        if Constants.CLOSE_CODES[closeCode] then --> Resuming
-            print('Resuming')
+        if Constants.CLOSE_CODES[closeCode] then
             self.resume()
-        else --> Reconnecting
-            print('Reconnecting')
+        else
             self.socket()
         end
     end
@@ -66,20 +63,19 @@ function Gateway.wrap(host: GatewayLink, path: GatewayLink, Token: string, Seria
         Socket.send(2, Constants.defaultIdentify(Token))
     end
 
-    --> Public
+    --// Public
     function self.socket()
         initListeners()
         Socket = Websocket.wrap(host, path, Listener)
         Socket.open()
-        
-        return handshake()
+        handshake()
     end
 
     function self.reconnect()
         Socket.close()
         Socket = Websocket.wrap(host, path, Listener)
         Socket.open()
-        return handshake()
+        handshake()
     end
 
     function self.resume()
@@ -104,8 +100,6 @@ type httpSocket = net.WebSocket
 type Instance = Component.Instance
 type Listener = Listen.Listener
 type Serializer = Serializer.Serializer
-
-type GatewayLink = Websocket.GatewayLink
 
 type Socket = Websocket.Socket
 type Payload = Serializer.Payload

@@ -1,50 +1,78 @@
 --!strict
---> Requires
+--// Requires
 local Component = require '../../Component'
-local Request = require 'Request'
+local net = require '@lune/net'
+local Constants = require '../../Constants'
 
---> This
+--// This
 local Rest = {}
 
 function Rest.wrap(): API
     local self = Component() :: API
 
-    --> Private
+    --// Private
     local TOKEN;
 
-    --> Public
+    local function request(token: string, method: httpMethod, endpoint: string): (Data, Error)
+        assert(token, 'Attempt to do an API request without a valid bot token')
+    
+        local URL = Constants.API_URL .. endpoint
+        local HEADERS = Constants.defaultHeaders(token)
+
+        local success, response = pcall(function()
+            return net.request {
+                method = method,
+                headers = HEADERS,
+                url = URL}
+        end)
+    
+        local package = net.jsonDecode(response.body)
+    
+        if success and response.ok then
+            return package, nil
+        else
+            return nil, net.jsonDecode(response.body)
+        end
+    end
+
+    --// Public
     function self.authenticate(token: string)
         TOKEN = token
         return self.getCurrentUser()
     end
 
-    --> Base requests
+    --// Base requests
     function self.getCurrentUser()
-        return Request.wrap(TOKEN, 'GET', '/users/@me')
+        return request(TOKEN, 'GET', '/users/@me')
     end
 
     function self.getGateway()
-        return Request.wrap(TOKEN, 'GET', '/gateway')
+        return request(TOKEN, 'GET', '/gateway')
     end
     
     function self.getGatewayBot()
-        return Request.wrap(TOKEN, 'GET', '/gateway/bot')
+        return request(TOKEN, 'GET', '/gateway/bot')
     end
 
     return self
 end
 
 export type API = Instance & {
-    authenticate: (Token: string) -> (Data, Error?),
-    --> Base methods
-    getCurrentUser: () -> (Data, Error?),
-    getGatewayBot: () -> (Data, Error?),
-    getGateway: () -> (Data, Error?)
+    authenticate: (Token: string) -> (Data, Error),
+    getCurrentUser: () -> (Data, Error),
+    getGatewayBot: () -> (Data, Error),
+    getGateway: () -> (Data, Error)
 }
 
-export type Error = Request.Error
-export type Data = Request.Data
+export type Error = {
+    message: string,
+    code: number
+}?
+
+export type Data = {[string] : any}?
 
 type Instance = Component.Instance
+
+type httpMethod = net.HttpMethod
 
 return Rest

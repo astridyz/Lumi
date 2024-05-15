@@ -2,8 +2,8 @@
 --> This
 local Message = {}
 
-function Message.wrap(data: {[any]: any}): Message
-    local self = {} :: Message
+function Message.wrap(data): Message
+    local self = {}
 
     --> Public
     self.id = data.id

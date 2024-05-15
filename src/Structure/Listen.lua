@@ -1,9 +1,9 @@
 --!strict
---> Requires
+--// Requires
 
 local Component = require '../Component'
 
---> This
+--// This
 
 local Listen = {}
 
@@ -12,7 +12,7 @@ function Listen.wrap(): Listener
 
     local Listening = {}
 
-    function self.listen<args...>(eventName: string | number, callback: (args...) -> any)
+    function self.listen(eventName: string | number, callback: (...any) -> ())
         assert(type(eventName) == 'string' or 'number', 'Invalid event name: only strings or numbers')
 
         if not Listening[eventName] then
@@ -20,9 +20,13 @@ function Listen.wrap(): Listener
         end
 
         table.insert(Listening[eventName], callback)
+
+        return function()
+            table.remove(Listening[eventName], table.find(Listening[eventName], callback))
+        end
     end
 
-    function self.emit(eventName: any, ...: any)
+    function self.emit(eventName: string | number, ...: any)
         local listeners = Listening[eventName]
         
         if not listeners then
@@ -38,8 +42,12 @@ function Listen.wrap(): Listener
 end
 
 export type Listener = Instance & {
-    listen: <args...>(eventName: string | number, callback: (args...) -> any) -> (),
-    emit: (eventName: string | number, arguments: any?) -> ()
+    listen: (eventName: string | number, callback: (...any) -> ()) -> (),
+    emit: (eventName: string | number, arguments: any?) -> (),
+}
+
+export type Listening = {
+
 }
 
 type Instance = Component.Instance

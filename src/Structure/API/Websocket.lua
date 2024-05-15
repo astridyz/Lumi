@@ -1,29 +1,27 @@
 --!strict
---> Requires
+--// Requires
 local Component = require '../../Component'
 local net = require '@lune/net'
 local task = require '@lune/task'
 local Listen = require '../Listen'
 
---> This
+--// This
 local Websocket = {}
 
-function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener)
+function Websocket.wrap(host: string, path: string, listener: Listener): Socket
     local self = Component() :: Socket
 
-    --> Private
-    local httpSocket: Websocket;
-    local IS_SOCKET_ACTIVE: boolean;
-    local Processing: thread;
-    local gatewayListener = listener
+    --// Private
+    local httpSocket
+    local IS_SOCKET_ACTIVE
+    local Processing
     
-    local function decode(rawData: string)
-        local package = net.jsonDecode(rawData)
-        gatewayListener.emit(package.op, package)
+    local function decode(package: string)
+        local payload = net.jsonDecode(package)
+        listener.emit(payload.op, payload)
     end
 
     local function process()
-        --> Loop
         while IS_SOCKET_ACTIVE and task.wait() do
 
             if httpSocket.closeCode then
@@ -32,28 +30,28 @@ function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener
                 return
             end
                 
-            local success, rawData = pcall(httpSocket.next)
+            local success, package = pcall(httpSocket.next)
             
-            if not success or not rawData then
+            if not success or not package then
                 IS_SOCKET_ACTIVE = false
-                listener.emit(7, httpSocket.closeCode :: number)
+                listener.emit(7, httpSocket.closeCode)
                 return
             end
 
-            decode(rawData :: string)
+            decode(package)
         end
     end
 
-    --> Public
+    --// Public
     function self.send(opcode: number, data: any)
-        assert(httpSocket, 'Attempt to send data without a valid socket')
+        assert(httpSocket, 'Attempt to send payload without a valid socket')
         httpSocket.send(
-            net.jsonEncode {op = opcode, d = data }
+            net.jsonEncode {op = opcode, d = data}
         )
     end
 
     function self.open()
-        assert(not IS_SOCKET_ACTIVE, 'Attempt to open a socket with an active websocket')
+        assert(not IS_SOCKET_ACTIVE, 'Attempt to open the same socket two times')
 
         local success, webSocket = pcall(net.socket, host .. path)
         assert(success, 'Could not create websocket')
@@ -77,12 +75,10 @@ function Websocket.wrap(host: GatewayLink, path: GatewayLink, listener: Listener
 end
 
 export type Socket = Instance & {
-    send: (opcode: number, data: any) -> (),
+    send: (opcode: number, payload: any) -> (),
     open: () -> (),
     close: () -> ()
 }
-
-export type GatewayLink = string
 
 type Instance = Component.Instance
 type Websocket = net.WebSocket
