@@ -1,17 +1,16 @@
 --!strict
---> Requires
+--// Requires
 local Component = require '../Component'
 local Listen = require 'Listen'
 local Constants = require '../Constants'
 
---> This
-
+--// This
 local Serializer = {}
 
 function Serializer.wrap(): Serializer
     local self = Component().extends(Listen) :: Serializer
 
-    --> Public
+    --// Public
     function self.data(rawData: Payload)
         local container = Constants.PAYLOADS[rawData.t]
         if not container then
@@ -19,7 +18,7 @@ function Serializer.wrap(): Serializer
         end
         
         local data = container.wrap(rawData.d)
-        self.emit(Constants.GATEWAY_EVENTS[rawData.t], table.freeze(data))
+        self.emit(rawData.t, table.freeze(data))
     end
 
     return self
@@ -28,8 +27,8 @@ end
 export type Payload = {
     op: number,
     d: {[any]: any},
-    s: number?,
-    t: string?
+    s: number,
+    t: string
 }
 
 export type Serializer = Instance & Listener & {

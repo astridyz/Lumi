@@ -5,6 +5,7 @@ local Component = require '../Component'
 local Rest = require 'API/Rest'
 local Gateway = require 'API/Gateway'
 local Constants = require '../Constants'
+local Events = require '../Events'
 local Serializer = require 'Serializer'
 
 --// This
@@ -38,15 +39,15 @@ function Client.wrap(): Client
         end
     end
 
-    function self.listen(name : string, callback: (...any) -> ())
-        assert(Constants.CLIENT_EVENTS[name], 'Event name not found')
-        Serializer.listen(name, callback)
+    function self.listen<output>(event : {payload: output, name: string, index: string}, callback: (...output) -> ())
+        assert(Events[event.index], 'Invalid event type')
+        Serializer.listen(event.name, callback)
     end
 
-    function self.listenOnce(name : string, callback: (...any) -> ())
-        assert(Constants.CLIENT_EVENTS[name], 'Event name not found')
-
-        local listening; listening = Serializer.listen(name, function(...)
+    function self.listenOnce<output>(event : {payload: output, name: string, index: string}, callback: (...output) -> ())
+        assert(Events[event.index], 'Invalid event type')
+        
+        local listening; listening = Serializer.listen(event.name, function(...)
             callback(...)
             listening()
         end)
@@ -58,8 +59,8 @@ end
 export type Client = Instance & {
     login: (Token: string) -> ({[string]: any}?, Error?),
     connect: () -> (),
-    listen: (name : string, callback: (...any) -> ()) -> (),
-    listenOnce: (name : string, callback: (...any) -> ()) -> ()
+    listen: <output>(name: {payload: output, name: string, index: string}, callback: (...output) -> ()) -> (),
+    listenOnce: <output>(name: {payload: output, name: string, index: string}, callback: (...output) -> ()) -> ()
 }
 
 type Error = Rest.Error

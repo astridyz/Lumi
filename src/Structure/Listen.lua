@@ -1,10 +1,8 @@
 --!strict
 --// Requires
-
 local Component = require '../Component'
 
 --// This
-
 local Listen = {}
 
 function Listen.wrap(): Listener
@@ -44,10 +42,6 @@ end
 export type Listener = Instance & {
     listen: (eventName: string | number, callback: (...any) -> ()) -> (),
     emit: (eventName: string | number, arguments: any?) -> (),
-}
-
-export type Listening = {
-
 }
 
 type Instance = Component.Instance

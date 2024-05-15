@@ -1,7 +1,12 @@
-local Message = require 'src/Structure/Serialized/message'
-export type Message = Message.Message
-
 return {
-    class = require 'src/Component',
-    client = require 'src/structure/Client'
+    component = require 'src/Component',
+    client = require 'src/Structure/Client',
+    
+    constants = function()
+        return require 'src/Constants'
+    end,
+
+    events = function()
+        return require 'src/Events'
+    end
 }
