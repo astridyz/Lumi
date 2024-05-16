@@ -1,28 +1,45 @@
 --!strict
 --// Requires
-local Component = require '../Component'
-local Listen = require 'Listen'
 local Constants = require '../Constants'
+local Component = require '../Component'
+local Cache = require 'Cache'
 
 --// This
 local Serializer = {}
 
-function Serializer.wrap(): Serializer
-    local self = Component().extends(Listen) :: Serializer
+function Serializer.wrap(...: Cache<any>): Serializer
+    local self = Component() :: Serializer
 
     --// Public
-    function self.data(rawData: Payload)
-        local container = Constants.PAYLOADS[rawData.t]
+    self.syncs = Cache.wrap('Client', 'k', Cache)
+
+    for _, cache in ipairs {...} do
+        self.syncs.set(cache.name, cache)
+    end
+
+    function self.data(package: Payload): (string?, {any}?)
+        local container = Constants.payloads[package.t]
         if not container then
             return
         end
         
-        local data = container.wrap(rawData.d)
-        self.emit(rawData.t, table.freeze(data))
+        local data = container.wrap(package.d)
+
+        local cache = self.syncs.get(data.prototype)
+        if cache then
+            cache.set(data.id, data)
+        end
+
+        return package.t, table.freeze(data)
     end
 
     return self
 end
+
+export type Serializer = Instance & {
+    syncs: Cache<Cache<any>>,
+    data: (package: Payload) -> (string?, {any}?)
+}
 
 export type Payload = {
     op: number,
@@ -31,11 +48,8 @@ export type Payload = {
     t: string
 }
 
-export type Serializer = Instance & Listener & {
-    data: (rawData: Payload) -> ()
-}
+type Cache<prototype> = Cache.Cache<prototype>
 
 type Instance = Component.Instance
-type Listener = Listen.Listener
 
 return Serializer

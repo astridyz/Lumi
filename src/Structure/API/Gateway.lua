@@ -11,7 +11,7 @@ local Serializer = require '../Serializer'
 --// This
 local Gateway = {}
 
-function Gateway.wrap(host: string, path: string, Token: string, Serializer: Serializer)
+function Gateway.wrap(host: string, path: string, Token: string, client: Listener, Serializer: Serializer)
     local self = Component() :: Gateway
 
     --// Private
@@ -31,23 +31,31 @@ function Gateway.wrap(host: string, path: string, Token: string, Serializer: Ser
 
     local function setupHeartBeat(package: Payload)
         HEARTBEAT_INTERVAL = package.d.heartbeat_interval * 10^-3 * .75
-        if not Heartbeating then Heartbeating = task.spawn(heartBeat) end
+        if not Heartbeating then
+            Heartbeating = task.spawn(heartBeat)
+        end
     end
 
     local function handleDispath(package: Payload)
         if package.t == 'READY' then
             SESSION = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
-
-        SEQUENCE = package.s;
-        Serializer.data(package)
+        SEQUENCE = package.s
+    
+        local event, data = Serializer.data(package)
+        if event and data then
+            client.emit(event, data)
+        end
     end
 
     local function tryResume(closeCode: number?)
-        if Constants.CLOSE_CODES[closeCode] then
+        local canResume = Constants.CLOSE_CODES[closeCode]
+        if canResume then
             self.resume()
-        else
+        elseif canResume == false then
             self.socket()
+        else
+            self.resume()
         end
     end
 
@@ -85,8 +93,7 @@ function Gateway.wrap(host: string, path: string, Token: string, Serializer: Ser
         Socket.send(6, {token = Token, session_id = SESSION.ID, seq = SEQUENCE})
     end
 
-    self.socket()
-    return self
+    return self.socket()
 end
 
 export type Gateway = Instance & {
@@ -99,9 +106,9 @@ type httpSocket = net.WebSocket
 
 type Instance = Component.Instance
 type Listener = Listen.Listener
-type Serializer = Serializer.Serializer
 
 type Socket = Websocket.Socket
 type Payload = Serializer.Payload
+type Serializer = Serializer.Serializer
 
 return Gateway

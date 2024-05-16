@@ -253,7 +253,7 @@ return {
         index = "inviteDelete"
     },
     messageCreate = {
-        payload = {} :: Message,
+        payload = function(message: Message) end,
         name = "MESSAGE_CREATE",
         index = "messageCreate"
     },

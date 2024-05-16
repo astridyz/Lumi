@@ -1,4 +1,5 @@
-local message = require 'Structure/Serialized/message'
+local Message = require 'Structure/Serialized/message'
+local Guild = require 'Structure/Serialized/Guild'
 
 local Constants = {
     API_URL = 'https:discord.com/api/v10',
@@ -38,8 +39,9 @@ local Constants = {
         [1001] = true   --> Reconnect opcode
     },
 
-    PAYLOADS = {
-        MESSAGE_CREATE = message
+    payloads = {
+        MESSAGE_CREATE = Message,
+        GUILD_CREATE = Guild
     }
 }
 
