@@ -1,8 +1,10 @@
 --!strict
+--// Requires
+
 --// This
 local Guild = {}
 
-function Guild.wrap(data): Guild?
+function Guild.wrap(data, serializer): Guild?
     local self = {}
 
     if data.unavailable then
@@ -12,7 +14,7 @@ function Guild.wrap(data): Guild?
     --// Public
     self.prototype = 'Guild'
     self.members = data.member_count
-    self.id = data.id
+    self.ID = data.id
     self.name = data.name
     self.description = data.description
     self.locale = data.preferred_locale
@@ -23,7 +25,7 @@ end
 export type Guild = {
     prototype: string,
     members: number,
-    id: number,
+    ID: number,
     name: string,
     description: string,
     locale: string

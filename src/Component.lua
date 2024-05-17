@@ -1,18 +1,18 @@
 --!strict
---> This
+--// This
 local Component = {}
 local Meta = {}
 
---> Meta
+--// Meta
 function Meta:__call(_ : any): Instance
     return self.new()
 end
 
---> Functions
+--// Functions
 function Component.new(): Instance
     local self = {}
 
-    --> Public
+    --// Public
     function self.extends(subClass: Factory)
         local classObject = subClass.wrap()
 
@@ -27,7 +27,7 @@ function Component.new(): Instance
         return self :: Instance & {[any]: any}
     end
 
-    --> Metatables
+    --// Metatables
     local meta = {}
     meta.__metatable = 'locked'
 
@@ -50,6 +50,7 @@ export type Instance = typeof(setmetatable(
         __metatable : string
     }
 ))
-export type Factory = {wrap: (any) -> Instance & {[any]: any}}
+
+export type Factory = {wrap: (any) -> {[any]: any}}
 
 return setmetatable(table.clone(Component), Meta) :: Manager

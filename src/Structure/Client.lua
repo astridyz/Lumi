@@ -11,7 +11,9 @@ local Cache = require 'Cache'
 local task = require '@lune/task'
 
 local Serializer = require 'Serializer'
+
 local Guild = require 'Serialized/Guild'
+local User = require 'Serialized/User'
 
 --// This
 
@@ -27,7 +29,8 @@ function Client.wrap(): Client
     local Listener = Listen.wrap()
 
     local Serializer = Serializer.wrap(
-        Cache.wrap('Guild', 'k', Guild)
+        Cache.wrap('Guild', 'k', Guild),
+        Cache.wrap('User', 'k', User)
     )
 
     --// Public
@@ -44,7 +47,7 @@ function Client.wrap(): Client
     function self.connect()
         local Data, _ = API.getGateway()
         if Data then
-            Gateway.wrap(Data.url, Constants.GATEWAY_PATH, TOKEN, Listener, Serializer)
+            Gateway.wrap(TOKEN, Listener, Serializer).socket(Data.url, Constants.GATEWAY_PATH)
             task.wait(1) --// Waiting for ready and important events after it
         end
     end
@@ -67,6 +70,10 @@ function Client.wrap(): Client
         return Serializer.syncs.get('Guild').get(ID)
     end
 
+    function self.getUser(ID: string): User
+        return Serializer.syncs.get('User').get(ID)
+    end
+
     return self
 end
 
@@ -75,7 +82,8 @@ export type Client = Instance & {
     connect: () -> (),
     listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
     listenOnce: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
-    getGuild: (ID: string) -> Guild
+    getGuild: (ID: string) -> Guild,
+    getUser: (ID: string) -> User
 }
 
 type Instance = Component.Instance
@@ -84,5 +92,6 @@ type Gateway = Gateway.Gateway
 type Error = Rest.Error
 
 type Guild = Guild.Guild
+type User = User.User
 
 return Client
