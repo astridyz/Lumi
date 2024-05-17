@@ -7,7 +7,7 @@ local Cache = require 'Cache'
 --// This
 local Serializer = {}
 
-function Serializer.wrap(...: Cache<any>): Serializer
+function Serializer.wrap(client, ...: Cache<any>): Serializer
     local self = Component() :: Serializer
 
     --// Private
@@ -31,7 +31,7 @@ function Serializer.wrap(...: Cache<any>): Serializer
             return
         end
         
-        local data = container.wrap(package.d, self)
+        local data = container.wrap(package.d, client, self)
 
         assert(data.prototype)
         InsertInCache(data)
@@ -39,7 +39,7 @@ function Serializer.wrap(...: Cache<any>): Serializer
         return package.t, table.freeze(data)
     end
 
-    function self.data(rawData: Data, container: Factory): Data
+    function self.data(rawData: Data, container: any): Data
         local data = container.wrap(rawData)
 
         assert(data.prototype)
@@ -54,7 +54,7 @@ end
 export type Serializer = Instance & {
     syncs: Cache<Cache<any>>,
     payload: (package: Payload) -> (string?, {any}?),
-    data: (rawData: Data, factory: Factory) -> Data
+    data: (rawData: Data, factory: any) -> Data
 }
 
 export type Payload = {
@@ -64,11 +64,10 @@ export type Payload = {
     t: string
 }
 
-type Data = {[any]: any}
+type Data = {[string]: any}
 
 type Cache<prototype> = Cache.Cache<prototype>
 
 type Instance = Component.Instance
-type Factory = Component.Factory
 
 return Serializer

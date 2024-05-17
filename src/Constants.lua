@@ -1,23 +1,25 @@
 local Message = require 'Structure/Serialized/message'
 local Guild = require 'Structure/Serialized/Guild'
+local Member = require 'Structure/Serialized/Member'
+--// local User = require 'Structure/Serialized/User'
 
 local Constants = {
-    API_URL = 'https:discord.com/api/v10',
+    apiUrl = 'https:discord.com/api/v10',
 
-    GATEWAY_PATH = '/?v=10&encoding=json/',
+    gatewayPath = '/?v=10&encoding=json/',
 
-    GATEWAY_CODES = {
-        DISPATH = 0,
-        HEARTBEAT = 1,
-        IDENTIFY = 2,
-        PRESENCE_UPDATE = 3,
-        VOICE_STATE_UPDATE = 4,
-        RESUME = 6,
-        RECONNECT = 7,
-        REQUEST_GUILD_MEMBERS = 8,
-        INVALID_SESSION = 9,
-        HELLO = 10,
-        HEARTBEAT_ACK = 11
+    gatewayCodes = {
+        dispatch = 0,
+        heartbeat = 1,
+        identify = 2,
+        presenceUpdate = 3,
+        voiceStateUpdate = 4,
+        resume = 6,
+        reconnect = 7,
+        requestGuildMembers = 8,
+        invalidSession = 9,
+        hello = 10,
+        heartbeatAck = 11
     },
     
     CLOSE_CODES = {
@@ -41,7 +43,11 @@ local Constants = {
 
     payloads = {
         MESSAGE_CREATE = Message,
-        GUILD_CREATE = Guild
+        MESSAGE_UPDATED = Message,
+        GUILD_CREATE = Guild,
+        GUILD_UPDATED = Guild,
+        GUILD_MEMBER_ADD = Member,
+        GUILD_MEMBER_REMOVE = Member,
     }
 }
 

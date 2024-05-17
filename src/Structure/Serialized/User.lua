@@ -2,7 +2,7 @@
 --// This
 local User = {}
 
-function User.wrap(data, serializer): User
+function User.wrap(data, client, serializer): User
     local self = {} :: User
 
     --//Public

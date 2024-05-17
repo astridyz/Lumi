@@ -2,12 +2,15 @@
 --// Requires
 
 local Component = require '../Component'
+
 local Rest = require 'API/Rest'
 local Gateway = require 'API/Gateway'
-local Constants = require '../Constants'
-local Events = require '../Events'
 local Listen = require 'Listen'
 local Cache = require 'Cache'
+
+local Constants = require '../Constants'
+local Events = require '../Events'
+
 local task = require '@lune/task'
 
 local Serializer = require 'Serializer'
@@ -28,10 +31,10 @@ function Client.wrap(): Client
     local API = Rest.wrap()
     local Listener = Listen.wrap()
 
-    local Serializer = Serializer.wrap(
-        Cache.wrap('Guild', 'k', Guild),
-        Cache.wrap('User', 'k', User)
-    )
+    local Guilds = Cache.wrap('Guild', 'k', Guild)
+    local Users = Cache.wrap('User', 'k', User)
+
+    local Serializer = Serializer.wrap(self, Guilds, Users)
 
     --// Public
     function self.login(token: string)
@@ -47,8 +50,8 @@ function Client.wrap(): Client
     function self.connect()
         local Data, _ = API.getGateway()
         if Data then
-            Gateway.wrap(TOKEN, Listener, Serializer).socket(Data.url, Constants.GATEWAY_PATH)
-            task.wait(1) --// Waiting for ready and important events after it
+            Gateway.wrap(TOKEN, Listener, Serializer).socket(Data.url, Constants.gatewayPath)
+            task.wait(1)
         end
     end
 
@@ -66,30 +69,47 @@ function Client.wrap(): Client
         end)
     end
 
-    function self.getGuild(ID: string): Guild
-        return Serializer.syncs.get('Guild').get(ID)
+    function self.getGuild(ID: string): (Guild?, string?)
+        return Guilds.get(ID)
     end
 
     function self.getUser(ID: string): User
-        return Serializer.syncs.get('User').get(ID)
+        return Users.get(ID)
+    end
+
+    function self.sendMessage(channelID: string, content: {[string]: any} | string): (true?, string?)
+        if type(content) == 'table' then
+            local _, err = API.createMessage(channelID, content)
+            return true, err and err.message
+        end
+
+        if type(content) == 'string' then
+            local _, err = API.createMessage(channelID, {content = content})
+            return true, err and err.message
+        end
+
+        return nil, 'Invalid message content body'
     end
 
     return self
 end
 
 export type Client = Instance & {
-    login: (Token: string) -> ({[string]: any}?, Error?),
+    login: (Token: string) -> (Data?, Error?),
     connect: () -> (),
     listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
     listenOnce: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
-    getGuild: (ID: string) -> Guild,
-    getUser: (ID: string) -> User
+    getGuild: (ID: string) -> (Guild?, string?),
+    getUser: (ID: string) -> User,
+    sendMessage: (channelID: string, content: {[string]: any} | string) -> (true?, string?),
 }
 
 type Instance = Component.Instance
 
 type Gateway = Gateway.Gateway
 type Error = Rest.Error
+
+type Data = Rest.Data
 
 type Guild = Guild.Guild
 type User = User.User
