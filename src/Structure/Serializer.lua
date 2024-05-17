@@ -10,6 +10,14 @@ local Serializer = {}
 function Serializer.wrap(...: Cache<any>): Serializer
     local self = Component() :: Serializer
 
+    --// Private
+    local function InsertInCache(data)
+        local cache = self.syncs.get(data.prototype)
+        if cache then
+            cache.set(data.ID, data)
+        end
+    end
+
     --// Public
     self.syncs = Cache.wrap('Client', 'k', Cache)
 
@@ -17,20 +25,27 @@ function Serializer.wrap(...: Cache<any>): Serializer
         self.syncs.set(cache.name, cache)
     end
 
-    function self.data(package: Payload): (string?, {any}?)
+    function self.payload(package: Payload): (string?, {any}?)
         local container = Constants.payloads[package.t]
         if not container then
             return
         end
         
-        local data = container.wrap(package.d)
+        local data = container.wrap(package.d, self)
 
-        local cache = self.syncs.get(data.prototype)
-        if cache then
-            cache.set(data.id, data)
-        end
-
+        assert(data.prototype)
+        InsertInCache(data)
+    
         return package.t, table.freeze(data)
+    end
+
+    function self.data(rawData: Data, container: Factory): Data
+        local data = container.wrap(rawData)
+
+        assert(data.prototype)
+        InsertInCache(data)
+
+        return data
     end
 
     return self
@@ -38,18 +53,22 @@ end
 
 export type Serializer = Instance & {
     syncs: Cache<Cache<any>>,
-    data: (package: Payload) -> (string?, {any}?)
+    payload: (package: Payload) -> (string?, {any}?),
+    data: (rawData: Data, factory: Factory) -> Data
 }
 
 export type Payload = {
     op: number,
-    d: {[any]: any},
+    d: Data,
     s: number,
     t: string
 }
 
+type Data = {[any]: any}
+
 type Cache<prototype> = Cache.Cache<prototype>
 
 type Instance = Component.Instance
+type Factory = Component.Factory
 
 return Serializer

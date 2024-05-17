@@ -37,9 +37,9 @@ end
 
 type mode = ('k' | 'v' | 'kv')
 
-export type Cache<prototype> = Instance & {
+export type Cache<asyncs> = Instance & {
     name: string,
-    get: (key: any) -> prototype,
+    get: (key: any) -> asyncs,
     find: (key: any) -> boolean,
     set: (key: any, value: any) -> ()
 }
