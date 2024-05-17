@@ -1,10 +1,8 @@
 --!strict
---// Requires
-
 --// This
 local Guild = {}
 
-function Guild.wrap(data, serializer): Guild?
+function Guild.wrap(data, client, serializer): Guild?
     local self = {}
 
     if data.unavailable then

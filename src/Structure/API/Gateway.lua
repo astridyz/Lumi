@@ -6,7 +6,7 @@ local Websocket = require 'Websocket'
 local Serializer = require '../Serializer'
 
 local Constants = require '../../Constants'
-local Codes = Constants.GATEWAY_CODES
+local Codes = Constants.gatewayCodes
 
 local net = require '@lune/net' 
 local task = require '@lune/task'
@@ -14,29 +14,33 @@ local task = require '@lune/task'
 --// This
 local Gateway = {}
 
-function Gateway.wrap(Token: string, client: Listener, serializer: Serializer): Gateway
+function Gateway.wrap(token: string, client: Listener, serializer: Serializer): Gateway
     local self = Component() :: Gateway
 
     --// Private
-    local HEARTBEAT_INTERVAL
+    local heartbeatInterval
     local SESSION = {}
-    local SEQUENCE
+    local eventSequence
 
-    local HOST
-    local PATH
-
+    local urlHost
+    local urlPath
+    
     local Heartbeating
     local Socket: Socket
     local CodeHandler = Listen.wrap()
 
+    local function sendHeartBeat()
+        Socket.send(1, eventSequence)
+    end
+
     local function heartBeat()
-        while task.wait(HEARTBEAT_INTERVAL) do
-            Socket.send(1, SEQUENCE)
+        while task.wait(heartbeatInterval) do
+            sendHeartBeat()
         end
     end
 
     local function setupHeartBeat(package: Payload)
-        HEARTBEAT_INTERVAL = package.d.heartbeat_interval * 10^-3 * .75
+        heartbeatInterval = package.d.heartbeat_interval * 10^-3 * .75
         if not Heartbeating then
             Heartbeating = task.spawn(heartBeat)
         end
@@ -46,7 +50,7 @@ function Gateway.wrap(Token: string, client: Listener, serializer: Serializer): 
         if package.t == 'READY' then
             SESSION = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
-        SEQUENCE = package.s
+        eventSequence = package.s
     
         local event, data = serializer.payload(package)
         if event and data then
@@ -55,37 +59,36 @@ function Gateway.wrap(Token: string, client: Listener, serializer: Serializer): 
     end
 
     local function tryResume(closeCode: number?)
+        print('Trying to resume:' .. tostring(closeCode))
         local canResume = Constants.CLOSE_CODES[closeCode]
         if canResume == (nil or true) then
             self.resume()
         else
             table.clear(SESSION)
-            self.socket(HOST, PATH)
+            self.socket(urlHost, urlPath)
         end
     end
 
     local function initCodeHandler()
-        CodeHandler.listen(Codes.HELLO, setupHeartBeat)
-        CodeHandler.listen(Codes.RECONNECT, tryResume)
-        CodeHandler.listen(Codes.DISPATH, handleDispatch)
-        CodeHandler.listen(Codes.HEARTBEAT, function()
-            Socket.send(1, SEQUENCE)
-        end)
+        CodeHandler.listen(Codes.hello, setupHeartBeat)
+        CodeHandler.listen(Codes.reconnect, tryResume)
+        CodeHandler.listen(Codes.dispatch, handleDispatch)
+        CodeHandler.listen(Codes.heartbeat, sendHeartBeat)
     end
     
     local function handshake()
-        Socket.send(2, Constants.defaultIdentify(Token))
+        Socket.send(2, Constants.defaultIdentify(token))
     end
 
     local function socket()
-        Socket = Websocket.wrap(SESSION.URL or HOST, PATH, CodeHandler)
+        Socket = Websocket.wrap(SESSION.URL or urlHost, urlPath, CodeHandler)
         Socket.open()
         handshake()
     end
 
     --// Public
     function self.socket(host: string, path: string)
-        HOST = host; PATH = path
+        urlHost = host; urlPath = path
         initCodeHandler()
         socket()
     end
@@ -98,7 +101,7 @@ function Gateway.wrap(Token: string, client: Listener, serializer: Serializer): 
     function self.resume()
         Socket.close()
         socket()
-        Socket.send(6, {token = Token, session_id = SESSION.ID, seq = SEQUENCE})
+        Socket.send(6, {token = token, session_id = SESSION.ID, seq = eventSequence})
     end
 
     return self

@@ -1,6 +1,9 @@
 local Message = require 'Structure/Serialized/message'
 type Message = Message.Message
 
+local Guild = require 'Structure/Serialized/Guild'
+type Guild = Guild.Guild
+
 return {
     hello = {
         payload = {},
@@ -118,12 +121,12 @@ return {
         index = "entitlementDelete"
     },
     guildCreate = {
-        payload = {},
+        payload = function(Guild: Guild) end,
         name = "GUILD_CREATE",
         index = "guildCreate"
     },
     guildUpdate = {
-        payload = {},
+        payload = function(Guild: Guild) end,
         name = "GUILD_UPDATE",
         index = "guildUpdate"
     },
@@ -258,7 +261,7 @@ return {
         index = "messageCreate"
     },
     messageUpdate = {
-        payload = {},
+        payload = function(message: Message) end,
         name = "MESSAGE_UPDATE",
         index = "messageUpdate"
     },
