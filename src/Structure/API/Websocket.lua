@@ -1,16 +1,22 @@
 --!strict
 --// Requires
-local Component = require '../../Component'
+local Lumi = require '../../Lumi'
 local net = require '@lune/net'
 local task = require '@lune/task'
 local Listen = require '../Listen'
 
+--// Types
+type Websocket = net.WebSocket
+type Listener = Listen.Listener
+
+export type Socket = {
+    send: (opcode: number, payload: any) -> (),
+    open: () -> (),
+    close: () -> ()
+}
+
 --// This
-local Websocket = {}
-
-function Websocket.wrap(host: string, path: string, listener: Listener): Socket
-    local self = Component() :: Socket
-
+return Lumi.component('Websocket', function(self, host: string, path: string, listener: Listener): Socket
     --// Private
     local httpSocket
     local IS_SOCKET_ACTIVE
@@ -72,16 +78,4 @@ function Websocket.wrap(host: string, path: string, listener: Listener): Socket
     end
 
     return self
-end
-
-export type Socket = Instance & {
-    send: (opcode: number, payload: any) -> (),
-    open: () -> (),
-    close: () -> ()
-}
-
-type Instance = Component.Instance
-type Websocket = net.WebSocket
-type Listener = Listen.Listener
-
-return Websocket
+end)

@@ -1,15 +1,30 @@
 --!strict
 --// Requires
-local Component = require '../../Component'
+local Lumi = require '../../Lumi'
 local net = require '@lune/net'
 local Constants = require '../../Constants'
 
+--// Types
+type httpMethod = net.HttpMethod
+
+export type API = {
+    authenticate: (Token: string) -> (Data, Error),
+    getCurrentUser: () -> (Data, Error),
+    getGatewayBot: () -> (Data, Error),
+    getGateway: () -> (Data, Error),
+    createMessage: (channelID: string, payload: Data) -> (Data, Error),
+    getGuild: (guildID: string) -> (Data, Error)
+}
+
+export type Error = {
+    message: string,
+    code: number
+}?
+
+export type Data = {[string] : any}?
+
 --// This
-local Rest = {}
-
-function Rest.wrap(): API
-    local self = Component() :: API
-
+return Lumi.component('Rest', function(self): API
     --// Private
     local Token
     local Headers
@@ -66,26 +81,4 @@ function Rest.wrap(): API
     end
 
     return self
-end
-
-export type API = Instance & {
-    authenticate: (Token: string) -> (Data, Error),
-    getCurrentUser: () -> (Data, Error),
-    getGatewayBot: () -> (Data, Error),
-    getGateway: () -> (Data, Error),
-    createMessage: (channelID: string, payload: Data) -> (Data, Error),
-    getGuild: (guildID: string) -> (Data, Error)
-}
-
-export type Error = {
-    message: string,
-    code: number
-}?
-
-export type Data = {[string] : any}?
-
-type Instance = Component.Instance
-
-type httpMethod = net.HttpMethod
-
-return Rest
+end)
