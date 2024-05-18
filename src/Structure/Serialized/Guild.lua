@@ -1,32 +1,25 @@
 --!strict
---// This
-local Guild = {}
+--// Requires
+local Lumi = require '../../Lumi'
 
-function Guild.wrap(data, client, serializer): Guild?
-    local self = {}
-
-    if data.unavailable then
-        return nil
-    end
-
-    --// Public
-    self.prototype = 'Guild'
-    self.members = data.member_count
-    self.ID = data.id
-    self.name = data.name
-    self.description = data.description
-    self.locale = data.preferred_locale
-
-    return self
-end
-
+--// Types
 export type Guild = {
-    prototype: string,
-    members: number,
+    container: string?,
+    members: number?,
     ID: number,
-    name: string,
-    description: string,
-    locale: string
+    name: string?,
+    description: string?,
+    locale: string?
 }
 
-return Guild
+--// This
+return Lumi.container('Guild', function(self, data, client, _): Guild
+    --// Public
+    self.members = data.member_count or nil
+    self.ID = data.id or nil
+    self.name = data.name or nil
+    self.description = data.description or nil
+    self.locale = data.preferred_locale or nil
+
+    return self
+end)

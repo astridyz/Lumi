@@ -1,15 +1,20 @@
 --!strict
 --// Requires
-local Component = require '../Component'
+local Lumi = require '../Lumi'
+
+--// Types
+export type Listener = {
+    listen: (eventName: string | number, callback: (...any) -> ()) -> (),
+    emit: (eventName: string | number, arguments: any?) -> (),
+}
 
 --// This
-local Listen = {}
+return Lumi.component('Listener', function(self): Listener
 
-function Listen.wrap(): Listener
-    local self = Component() :: Listener
-
+    --// Private
     local Listening = {}
 
+    --// Methods
     function self.listen(eventName: string | number, callback: (...any) -> ())
         assert(type(eventName) == 'string' or 'number', 'Invalid event name: only strings or numbers')
 
@@ -37,13 +42,4 @@ function Listen.wrap(): Listener
     end
 
     return self
-end
-
-export type Listener = Instance & {
-    listen: (eventName: string | number, callback: (...any) -> ()) -> (),
-    emit: (eventName: string | number, arguments: any?) -> (),
-}
-
-type Instance = Component.Instance
-
-return Listen
+end)

@@ -1,47 +1,58 @@
 --!strict
 --// Requires
-
-local Component = require '../Component'
+local Lumi = require '../Lumi'
 
 local Rest = require 'API/Rest'
 local Gateway = require 'API/Gateway'
 local Listen = require 'Listen'
 local Cache = require 'Cache'
+local Serializer = require 'Serializer'
 
 local Constants = require '../Constants'
 local Events = require '../Events'
 
 local task = require '@lune/task'
 
-local Serializer = require 'Serializer'
-
 local Guild = require 'Serialized/Guild'
 local User = require 'Serialized/User'
 
+--// Types
+type Error = Rest.Error
+
+type Guild = Guild.Guild
+type User = User.User
+
+type Data = Lumi.Data
+
+export type Client = {
+    login: (Token: string) -> (Data?, Error?),
+    connect: () -> (),
+    listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
+    listenOnce: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
+    getGuild: (ID: string) -> Guild?,
+    getUser: (ID: string) -> User?,
+    sendMessage: (channelID: string, content: {[string]: any} | string) -> (boolean, string?),
+}
+
 --// This
-
-local Client = {}
-
-function Client.wrap(): Client
-    local self = Component() :: Client
-
+return Lumi.component('Client', function(self): Client
     --// Private
-    local TOKEN;
+    local Token;
 
-    local API = Rest.wrap()
-    local Listener = Listen.wrap()
+    local API = Rest()
+    local Listener = Listen()
 
-    local Guilds = Cache.wrap('Guild', 'k', Guild)
-    local Users = Cache.wrap('User', 'k', User)
+    local Guilds = Cache('Guild', 'k', Guild)
+    local Users = Cache('User', 'k', User)
 
-    local Serializer = Serializer.wrap(self, Guilds, Users)
+    local Serializer = Serializer(self :: any, {Guilds, Users})
 
-    --// Public
+    --// Methods
     function self.login(token: string)
-        assert(token ~= nil, 'No token have been sent.')
-        TOKEN = token
+        assert(token ~= nil, 'No Token have been sent.')
+        Token = token
 
-        local result, err = API.authenticate(TOKEN)
+        local result, err = API.authenticate(Token)
         assert(not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
 
         return result
@@ -50,7 +61,7 @@ function Client.wrap(): Client
     function self.connect()
         local Data, _ = API.getGateway()
         if Data then
-            Gateway.wrap(TOKEN, Listener, Serializer).socket(Data.url, Constants.gatewayPath)
+            Gateway(Token, Listener, Serializer).socket(Data.url, Constants.gatewayPath)
             task.wait(1)
         end
     end
@@ -69,15 +80,15 @@ function Client.wrap(): Client
         end)
     end
 
-    function self.getGuild(ID: string): (Guild?, string?)
+    function self.getGuild(ID: string): Guild?
         return Guilds.get(ID)
     end
 
-    function self.getUser(ID: string): User
+    function self.getUser(ID: string): User?
         return Users.get(ID)
     end
 
-    function self.sendMessage(channelID: string, content: {[string]: any} | string): (true?, string?)
+    function self.sendMessage(channelID: string, content: {[string]: any} | string): (boolean, string?)
         if type(content) == 'table' then
             local _, err = API.createMessage(channelID, content)
             return true, err and err.message
@@ -88,30 +99,8 @@ function Client.wrap(): Client
             return true, err and err.message
         end
 
-        return nil, 'Invalid message content body'
+        return false, 'Invalid message content body'
     end
 
     return self
-end
-
-export type Client = Instance & {
-    login: (Token: string) -> (Data?, Error?),
-    connect: () -> (),
-    listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
-    listenOnce: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
-    getGuild: (ID: string) -> (Guild?, string?),
-    getUser: (ID: string) -> User,
-    sendMessage: (channelID: string, content: {[string]: any} | string) -> (true?, string?),
-}
-
-type Instance = Component.Instance
-
-type Gateway = Gateway.Gateway
-type Error = Rest.Error
-
-type Data = Rest.Data
-
-type Guild = Guild.Guild
-type User = User.User
-
-return Client
+end)

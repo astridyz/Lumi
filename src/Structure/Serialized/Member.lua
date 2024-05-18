@@ -1,21 +1,12 @@
 --!strict
 --// Requires
+local Lumi = require '../../Lumi'
 local User = require 'User'
 local Guild = require 'Guild'
 
---// This
-local Member = {}
-
-function Member.wrap(data, client, serializer): Member
-    local self = {} :: Member
-
-    self.prototype = 'Member'
-    self.user = data.user and serializer.data(data.user, User) or nil
-    self.nickname = data.nick
-    self.guild = data.guild_id and data.guild_id or nil
-
-    return self
-end
+--// Types
+type User = User.User
+type Guild = Guild.Guild
 
 export type Member = {
     prototype: string,
@@ -24,7 +15,12 @@ export type Member = {
     nickname: string,
 }
 
-type User = User.User
-type Guild = Guild.Guild
+--// This
+return Lumi.container('Member', function(self, data, client, serializer): Member
+    --// Public
+    self.user = data.user and serializer.data(data.user, User) or nil
+    self.nickname = data.nick
+    self.guild = data.guild_id and data.guild_id or nil
 
-return Member
+    return self
+end)
