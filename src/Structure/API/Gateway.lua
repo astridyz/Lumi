@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Component = require '../../Component'
+local Lumi = require '../../Lumi'
 local Listen = require '../Listen'
 local Websocket = require 'Websocket'
 local Serializer = require '../Serializer'
@@ -11,12 +11,23 @@ local Codes = Constants.gatewayCodes
 local net = require '@lune/net' 
 local task = require '@lune/task'
 
+--// Types
+type httpSocket = net.WebSocket
+
+type Listener = Listen.Listener
+type Socket = Websocket.Socket
+
+type Payload = Serializer.Payload
+type Serializer = Serializer.Serializer
+
+export type Gateway = {
+    socket: (host: string, path: string) -> (),
+    reconnect: () -> (),
+    resume: () -> (),
+}
+
 --// This
-local Gateway = {}
-
-function Gateway.wrap(token: string, client: Listener, serializer: Serializer): Gateway
-    local self = Component() :: Gateway
-
+return Lumi.component('Gateway', function(self, token: string, client: Listener, serializer: Serializer): Gateway
     --// Private
     local heartbeatInterval
     local SESSION = {}
@@ -27,7 +38,7 @@ function Gateway.wrap(token: string, client: Listener, serializer: Serializer): 
     
     local Heartbeating
     local Socket: Socket
-    local CodeHandler = Listen.wrap()
+    local CodeHandler = Listen()
 
     local function sendHeartBeat()
         Socket.send(1, eventSequence)
@@ -54,6 +65,7 @@ function Gateway.wrap(token: string, client: Listener, serializer: Serializer): 
     
         local event, data = serializer.payload(package)
         if event and data then
+            -- print(data)
             client.emit(event, data)
         end
     end
@@ -81,7 +93,7 @@ function Gateway.wrap(token: string, client: Listener, serializer: Serializer): 
     end
 
     local function socket()
-        Socket = Websocket.wrap(SESSION.URL or urlHost, urlPath, CodeHandler)
+        Socket = Websocket(SESSION.URL or urlHost, urlPath, CodeHandler)
         Socket.open()
         handshake()
     end
@@ -105,21 +117,4 @@ function Gateway.wrap(token: string, client: Listener, serializer: Serializer): 
     end
 
     return self
-end
-
-export type Gateway = Instance & {
-    socket: (host: string, path: string) -> (),
-    reconnect: () -> (),
-    resume: () -> (),
-}
-
-type httpSocket = net.WebSocket
-
-type Instance = Component.Instance
-
-type Listener = Listen.Listener
-type Socket = Websocket.Socket
-type Payload = Serializer.Payload
-type Serializer = Serializer.Serializer
-
-return Gateway
+end)

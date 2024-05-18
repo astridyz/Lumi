@@ -1,17 +1,33 @@
 --!strict
 --// Requires
+local Lumi = require '../../Lumi'
 local User = require 'User'
 local Member = require 'Member'
 local Guild = require 'Guild'
 
+--// Types
+type Data = {[string]: any}
+
+type User = User.User
+type Member = Member.Member
+type Guild = Guild.Guild
+
+export type Message = {
+    author: User?,
+    member: Member?,
+    guild: Guild?,
+    prototype: string,
+    ID: string,
+    everyone: boolean,
+    channelID: string,
+    content: string,
+    respond: (content: string) -> (Data?, string),
+    reply: (content: string) -> (Data?, string)
+}
+
 --// This
-local Message = {}
-
-function Message.wrap(data, client: {sendMessage: (string, Data | string) -> (...any)}, serializer: {data: (...any) -> (), syncs: any})
-    local self = {}
-
+return Lumi.container('Message', function(self, data, client, serializer): Message
     --// Public
-    self.prototype = 'Message'
     self.ID = data.id
     self.everyone = data.mention_everyone
     self.channelID = data.channel_id
@@ -33,25 +49,4 @@ function Message.wrap(data, client: {sendMessage: (string, Data | string) -> (..
     end
 
     return self
-end
-
-type Data = {[string]: any}
-
-export type Message = {
-    author: User?,
-    member: Member?,
-    guild: Guild?,
-    prototype: string,
-    ID: string,
-    everyone: boolean,
-    channelID: string,
-    content: string,
-    respond: (content: string) -> (Data?, string),
-    reply: (content: string) -> (Data?, string)
-}   
-
-type User = User.User
-type Member = Member.Member
-type Guild = Guild.Guild
-
-return Message
+end)

@@ -1,12 +1,20 @@
+--!strict
 --// Requires
-local Component = require '../Component'
+local Lumi = require '../Lumi'
+
+--// Types
+type mode = ('k' | 'v' | 'kv')
+
+export type Cache<asyncs> = {
+    name: string,
+    get: (key: any) -> asyncs,
+    find: (key: any) -> boolean,
+    set: (key: any, value: any) -> (),
+    protect: (key: any) -> ()
+}
 
 --// This
-local Cache = {}
-
-function Cache.wrap<prototype>(name: string, mode: mode?, factory: {wrap: (...any) -> prototype}): Cache<prototype>
-    local self = Component() :: Cache<prototype>
-
+return Lumi.component('Cache', function<model>(self, name: string, mode: mode?, factory: (...any) -> model): Cache<model>
     --// Private
     local asyncs = setmetatable({}, {__mode = mode})
     local protected = {}
@@ -14,36 +22,23 @@ function Cache.wrap<prototype>(name: string, mode: mode?, factory: {wrap: (...an
     --// Public
     self.name = name
 
-    function self.get(key: any): prototype
+    function self.get(key): model
         return asyncs[key] or protected[key] or nil
     end
 
-    function self.find(key: any): boolean
+    function self.find(key): boolean
         return asyncs[key] and true or false
     end
 
-    function self.set(key: any, value: any)
+    function self.set(key, value)
         asyncs[key] = value
     end
 
-    function self.protect(key: any)
+    function self.protect(key)
         local value = asyncs[key]
         protected[key] = value
         asyncs[key] = nil
     end
 
     return self
-end
-
-type mode = ('k' | 'v' | 'kv')
-
-export type Cache<asyncs> = Instance & {
-    name: string,
-    get: (key: any) -> asyncs,
-    find: (key: any) -> boolean,
-    set: (key: any, value: any) -> ()
-}
-
-type Instance = Component.Instance
-
-return Cache
+end)

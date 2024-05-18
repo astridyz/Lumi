@@ -1,57 +1,14 @@
 --!strict
 --// Requires
+local Lumi = require '../Lumi'
 local Constants = require '../Constants'
-local Component = require '../Component'
 local Cache = require 'Cache'
 
---// This
-local Serializer = {}
+--// Types
+type Data = {[string]: any}
+type Cache<asyncs> = Cache.Cache<asyncs>
 
-function Serializer.wrap(client, ...: Cache<any>): Serializer
-    local self = Component() :: Serializer
-
-    --// Private
-    local function InsertInCache(data)
-        local cache = self.syncs.get(data.prototype)
-        if cache then
-            cache.set(data.ID, data)
-        end
-    end
-
-    --// Public
-    self.syncs = Cache.wrap('Client', 'k', Cache)
-
-    for _, cache in ipairs {...} do
-        self.syncs.set(cache.name, cache)
-    end
-
-    function self.payload(package: Payload): (string?, {any}?)
-        local container = Constants.payloads[package.t]
-        if not container then
-            return
-        end
-        
-        local data = container.wrap(package.d, client, self)
-
-        assert(data.prototype)
-        InsertInCache(data)
-    
-        return package.t, table.freeze(data)
-    end
-
-    function self.data(rawData: Data, container: any): Data
-        local data = container.wrap(rawData)
-
-        assert(data.prototype)
-        InsertInCache(data)
-
-        return data
-    end
-
-    return self
-end
-
-export type Serializer = Instance & {
+export type Serializer = {
     syncs: Cache<Cache<any>>,
     payload: (package: Payload) -> (string?, {any}?),
     data: (rawData: Data, factory: any) -> Data
@@ -64,10 +21,43 @@ export type Payload = {
     t: string
 }
 
-type Data = {[string]: any}
+--// This
+return Lumi.component('Serializer', function(self, client: any, containers: {Cache<any>}): Serializer
+    --// Public
+    self.syncs = Cache('Serialized', 'k', Cache)
 
-type Cache<prototype> = Cache.Cache<prototype>
+    for _, cache in ipairs(containers) do
+        self.syncs.set(cache.name, cache)
+    end
 
-type Instance = Component.Instance
+    local function InsertInCache(data)
+        local cache = self.syncs.get(data.prototype)
+        if cache then
+            cache.set(data.ID, data)
+        end
+    end
 
-return Serializer
+    --// Methods
+    function self.payload(package)
+        local container = Constants.payloads[package.t]
+        if not container then
+            return
+        end
+        
+        local data = container(package.d, client, self)
+        assert(data.container)
+        InsertInCache(data)
+    
+        return package.t, table.freeze(data)
+    end
+
+    function self.data(rawData, container)
+        local data = container(rawData)
+        assert(data.container)
+        InsertInCache(data)
+
+        return data
+    end
+
+    return self
+end)
