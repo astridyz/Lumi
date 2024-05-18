@@ -31,7 +31,7 @@ return Lumi.component('Serializer', function(self, client: any, containers: {Cac
     end
 
     local function InsertInCache(data)
-        local cache = self.syncs.get(data.prototype)
+        local cache = self.syncs.get(data.container)
         if cache then
             cache.set(data.ID, data)
         end

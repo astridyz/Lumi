@@ -1,7 +1,8 @@
 local Message = require 'Structure/Serialized/message'
 local Guild = require 'Structure/Serialized/Guild'
 local Member = require 'Structure/Serialized/Member'
---// local User = require 'Structure/Serialized/User'
+-- local Channel = require 'Structure/Serialized/Channel'
+-- local User = require 'Structure/Serialized/User'
 
 local Constants = {
     apiUrl = 'https:discord.com/api/v10',

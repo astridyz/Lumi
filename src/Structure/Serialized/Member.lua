@@ -9,14 +9,13 @@ type User = User.User
 type Guild = Guild.Guild
 
 export type Member = {
-    prototype: string,
     user: User?,
     guild: Guild?,
     nickname: string,
 }
 
 --// This
-return Lumi.container('Member', function(self, data, client, serializer): Member
+return Lumi.container('Member', function(self, data, _, serializer): Member
     --// Public
     self.user = data.user and serializer.data(data.user, User) or nil
     self.nickname = data.nick

@@ -41,16 +41,19 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     local CodeHandler = Listen()
 
     local function sendHeartBeat()
+        print('Heartbeat sent')
         Socket.send(1, eventSequence)
     end
 
     local function heartBeat()
+        print('Starting to heartbeat')
         while task.wait(heartbeatInterval) do
             sendHeartBeat()
         end
     end
 
     local function setupHeartBeat(package: Payload)
+        print('Setting up everything')
         heartbeatInterval = package.d.heartbeat_interval * 10^-3 * .75
         if not Heartbeating then
             Heartbeating = task.spawn(heartBeat)
@@ -58,6 +61,7 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
 
     local function handleDispatch(package: Payload)
+        print('Dispatch: ' .. package.t)
         if package.t == 'READY' then
             SESSION = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
@@ -65,7 +69,6 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     
         local event, data = serializer.payload(package)
         if event and data then
-            -- print(data)
             client.emit(event, data)
         end
     end
@@ -82,6 +85,7 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
 
     local function initCodeHandler()
+        print('Initing handlers')
         CodeHandler.listen(Codes.hello, setupHeartBeat)
         CodeHandler.listen(Codes.reconnect, tryResume)
         CodeHandler.listen(Codes.dispatch, handleDispatch)
@@ -89,10 +93,12 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
     
     local function handshake()
+        print('Handshake!')
         Socket.send(2, Constants.defaultIdentify(token))
     end
 
     local function socket()
+        print('Opening socket!')
         Socket = Websocket(SESSION.URL or urlHost, urlPath, CodeHandler)
         Socket.open()
         handshake()
