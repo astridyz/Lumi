@@ -1,6 +1,6 @@
 return {
     manager = require 'src/Lumi',
-    client = require 'src/Structure/Client',
+    session = require 'src/Structure/Session',
     constants = require 'src/Constants',
     events = require 'src/Events'
 }
