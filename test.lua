@@ -1,13 +1,11 @@
 --!strict
 local Lumi = require 'init'
-local Client = Lumi.client()
+local Session = Lumi.session()
 local Events = Lumi.events
 
-Client.login('MTIzNTk3MTAyMzQ0MzMzMzIxMQ.GPzphV.fbAIyQ85wFfUxG1L_1Fuf6o6QU3fyUh-yizNg4')
-Client.connect()
+Session.login('MTIzNTk3MTAyMzQ0MzMzMzIxMQ.GPzphV.fbAIyQ85wFfUxG1L_1Fuf6o6QU3fyUh-yizNg4')
+Session.connect()
 
-Client.listen(Events.messageCreate, function(message)
-    if message.content == 'Hi' then
-        message.reply('Hey there!')
-    end
+Session.listen(Events.messageCreate, function(message)
+    print(message.guild.roles.get('1240749816242376744').name)
 end)

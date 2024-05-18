@@ -15,6 +15,7 @@ local task = require '@lune/task'
 
 local Guild = require 'Serialized/Guild'
 local User = require 'Serialized/User'
+local Channel = require 'Serialized/Channel'
 
 --// Types
 type Error = Rest.Error
@@ -24,7 +25,7 @@ type User = User.User
 
 type Data = Lumi.Data
 
-export type Client = {
+export type Session = {
     login: (Token: string) -> (Data?, Error?),
     connect: () -> (),
     listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
@@ -35,7 +36,7 @@ export type Client = {
 }
 
 --// This
-return Lumi.component('Client', function(self): Client
+return Lumi.component('Session', function(self): Session
     --// Private
     local Token;
 
@@ -44,8 +45,9 @@ return Lumi.component('Client', function(self): Client
 
     local Guilds = Cache('Guild', 'k', Guild)
     local Users = Cache('User', 'k', User)
+    local Channel = Cache('Channel', 'k', Channel)
 
-    local Serializer = Serializer(self :: any, {Guilds, Users})
+    local Serializer = Serializer(self :: any, {Guilds, Users, Channel})
 
     --// Methods
     function self.login(token: string)
