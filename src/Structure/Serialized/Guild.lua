@@ -13,7 +13,6 @@ type Channel = Channel.Channel
 type Role = Role.Role
 
 export type Guild = {
-    container: string?,
     members: number?,
     ID: number,
     name: string?,
@@ -22,6 +21,20 @@ export type Guild = {
     channels: Cache<Channel>,
     roles: Cache<Role>
 }
+
+--[=[
+
+    @within Containers
+    @interface Guild
+    .members number
+    .ID string
+    .name string
+    .description string
+    .locale string
+    .channels Cache<Channel>
+    .roles Cache<Role>
+
+]=]
 
 --// This
 return Lumi.container('Guild', function(self, data, client, serializer): Guild

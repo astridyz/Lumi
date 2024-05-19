@@ -8,6 +8,38 @@ export type Listener = {
     emit: (eventName: string | number, arguments: any?) -> (),
 }
 
+--[=[
+
+    @class Listener
+    @private
+
+    Page destined to people that want to help and extend Lumi.
+
+    ### Usage Example:
+    
+    :::caution Sensitive
+        Data inside components are sensitive and could break Lumi if changed.  
+        Do not change or create components without reading the docs information.
+    :::
+
+    A event listener class. It has generic use so feel free to use it without many Lumi restrictions.
+
+    ```lua
+    local Connection;
+
+    local function callback()
+        print('Thanks!')
+        Connection()
+    end
+
+    Connection = listener.listen('welcome', callback)
+
+    listener.emit('Welcome') --> Thanks!
+
+    ```
+
+]=]
+
 --// This
 return Lumi.component('Listener', function(self): Listener
 
@@ -15,6 +47,15 @@ return Lumi.component('Listener', function(self): Listener
     local Listening = {}
 
     --// Methods
+
+    --[=[
+
+        @within Listener
+        @return () -> () -- When the return function is called, the listener will stop listening to the given event.
+        Listen to a event and when it is emitted, calls a callback.
+
+    ]=]
+
     function self.listen(eventName: string | number, callback: (...any) -> ())
         assert(type(eventName) == 'string' or 'number', 'Invalid event name: only strings or numbers')
 
@@ -28,6 +69,13 @@ return Lumi.component('Listener', function(self): Listener
             table.remove(Listening[eventName], table.find(Listening[eventName], callback))
         end
     end
+
+        --[=[
+
+        @within Listener
+        Calls every callback that is listening to a given event.
+
+    ]=]
 
     function self.emit(eventName: string | number, ...: any)
         local listeners = Listening[eventName]

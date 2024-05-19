@@ -4,6 +4,9 @@ type Message = Message.Message
 local Guild = require 'Structure/Serialized/Guild'
 type Guild = Guild.Guild
 
+local Channel = require 'Structure/Serialized/Channel'
+type Channel = Channel.Channel
+
 export type Event<args...> = {
     payload: (args...) -> (),
     index: string,
@@ -62,17 +65,17 @@ return {
         index = "autoModerationActionExecution"
     },
     channelCreate = {
-        payload = {},
+        payload = function(Channel: Channel) end,
         name = "CHANNEL_CREATE",
         index = "channelCreate"
     },
     channelUpdate = {
-        payload = {},
+        payload = function(Channel: Channel) end,
         name = "CHANNEL_UPDATE",
         index = "channelUpdate"
     },
     channelDelete = {
-        payload = {},
+        payload = function(Channel: Channel) end,
         name = "CHANNEL_DELETE",
         index = "channelDelete"
     },

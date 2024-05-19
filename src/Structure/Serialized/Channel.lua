@@ -7,12 +7,27 @@ export type Channel = {
     ID: string,
     type: string,
     name: string,
-    guild: string,
+    guildID: string,
     topic: string,
     nsfw: boolean,
     slowmode: number,
     parentID: number,
 }
+
+--[=[
+
+    @within Containers
+    @interface Channel
+    .name string
+    .ID string
+    .type string
+    .guildID string
+    .topic string
+    .nsfw boolean
+    .slowmode number
+    .parentID number
+
+]=]
 
 --//This
 return Lumi.container('Channel', function(self, data): Channel

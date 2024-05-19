@@ -11,6 +11,18 @@ export type Role = {
     mentionable: boolean,
 }
 
+--[=[
+
+    @within Containers
+    @interface Role
+    .ID string
+    .name string
+    .intColor number
+    .managed boolean
+    .mentionable boolean
+
+]=]
+
 --//This
 return Lumi.container('Role', function(self, data, _, _): Role
     --// Public

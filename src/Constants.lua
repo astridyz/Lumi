@@ -1,7 +1,7 @@
 local Message = require 'Structure/Serialized/message'
 local Guild = require 'Structure/Serialized/Guild'
 local Member = require 'Structure/Serialized/Member'
--- local Channel = require 'Structure/Serialized/Channel'
+local Channel = require 'Structure/Serialized/Channel'
 -- local User = require 'Structure/Serialized/User'
 
 local Constants = {
@@ -44,11 +44,14 @@ local Constants = {
 
     payloads = {
         MESSAGE_CREATE = Message,
-        MESSAGE_UPDATED = Message,
+        MESSAGE_UPDATE = Message,
         GUILD_CREATE = Guild,
-        GUILD_UPDATED = Guild,
+        GUILD_UPDATE = Guild,
         GUILD_MEMBER_ADD = Member,
         GUILD_MEMBER_REMOVE = Member,
+        CHANNEL_CREATE = Channel,
+        CHANNEL_UPDATE = Channel,
+        CHANNEL_DELETE = Channel,
     }
 }
 

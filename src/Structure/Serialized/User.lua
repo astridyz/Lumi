@@ -11,6 +11,18 @@ export type User = {
     mention: () -> string
 }
 
+--[=[
+
+    @within Containers
+    @interface User
+    .ID string
+    .username String
+    .discriminator string -- Discriminators are deprecated
+    .nickname string
+    .mention () -> string -- Returns a formated mentioning string
+
+]=]
+
 --// This
 return Lumi.container('User', function(self, data): User
     --//Public

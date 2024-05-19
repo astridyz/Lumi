@@ -15,8 +15,8 @@ type Guild = Guild.Guild
 type Channel = Channel.Channel
 
 export type Message = {
-    author: User?,
-    member: Member?,
+    author: User,
+    member: Member,
     guild: Guild,
     ID: string,
     everyone: boolean,
@@ -26,6 +26,22 @@ export type Message = {
     reply: (content: any) -> (Data?, string)
 }
 
+--[=[
+
+    @within Containers
+    @interface Message
+    .author User
+    .member Member?
+    .guild Guild?
+    .ID string
+    .everyone boolean
+    .channel Channel
+    .content string
+    .respond (content: {} | string) -> (success: Boolean, error: string?) -- Send a message in the current channel
+    .reply (content: {} | string) -> (success: Boolean, error: string?) -- Send a message replying to the message returned by messageCreate event
+
+]=]
+
 --// This
 return Lumi.container('Message', function(self, data, client, serializer): Message
     --// Public
@@ -34,9 +50,9 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
     self.content = data.content
 
     self.channel = serializer.syncs.get('Channel').get(data.channel_id) or nil
-    self.author = not data.webhook_id and serializer.data(data.author, User) or nil
+    self.author = serializer.data(data.author, User)
     self.guild = data.guild_id and serializer.syncs.get('Guild').get(data.guild_id) or nil
-    self.member = data.member and serializer.data(data.member, Member) or nil
+    self.member = serializer.data(data.member, Member) or nil
 
     --// Methods
     function self.respond(content: any)

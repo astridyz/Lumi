@@ -29,7 +29,7 @@ type Event<args...> = Events.Event<args...>
 export type Session = {
     login: (token: string) -> (Data?, Error?),
     connect: () -> (),
-    listen: <args...>(name: {payload: (args...) -> ()} & any, callback: (args...) -> ()) -> (),
+    listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
     getGuild: (ID: string) -> Guild?,
     getUser: (ID: string) -> User?,
     sendMessage: (channelID: string, content: {[string]: any} | string) -> (boolean, string?),
@@ -40,6 +40,10 @@ export type Session = {
     @class Session
 
     Main interface for interacting with Discord.
+
+    :::info Topologically-aware
+        All functions bellow need an valid token and a opened gateway to be used.  
+    :::
 
 ]=]
 
@@ -88,6 +92,7 @@ return Lumi.component('Session', function(self): Session
     ]=]
 
     function self.connect()
+        assert(Token ~= nil, 'No token available, authenticate first.')
         local Data, _ = API.getGateway()
         if Data then
             Gateway(Token, Listener, Serializer).socket(Data.url, Constants.gatewayPath)
@@ -100,7 +105,15 @@ return Lumi.component('Session', function(self): Session
         @within Session
         @param event {} -- A event object. All events are listed in `Events.lua` file.
 
-        Listen to a given `Event` and calls a function when it is emited.
+        Listen to a given `Event` and calls a callback when it is emitted.
+        
+        ### Usage Example:
+
+        ```lua
+        Session.listen(Events.messageCreate, function(message)
+            print(message.author.ID)
+        end)
+        ```
 
     ]=]
 
@@ -109,22 +122,13 @@ return Lumi.component('Session', function(self): Session
         return Listener.listen(event.name, callback)
     end
 
-    --[=[
-
-        @within Session
-
-    ]=]
-
+    --- @within Session
     function self.getGuild(ID: string): Guild?
         return Guilds.get(ID)
     end
 
-    --[=[
 
-        @within Session
-
-    ]=]
-
+    --- @within Session
     function self.getUser(ID: string): User?
         return Users.get(ID)
     end
@@ -142,14 +146,16 @@ return Lumi.component('Session', function(self): Session
     
 
     function self.sendMessage(channelID: string, content: {[string]: any} | string): (boolean, string?)
+        assert(Token == nil, 'No token available, authenticate first.')
+
         if type(content) == 'table' then
-            local _, err = API.createMessage(channelID, content)
-            return true, err and err.message
+            local result, err = API.createMessage(channelID, content)
+            return result and true or false, err and err.message
         end
 
         if type(content) == 'string' then
-            local _, err = API.createMessage(channelID, {content = content})
-            return true, err and err.message
+            local result, err = API.createMessage(channelID, {content = content})
+            return result and true or false, err and err.message
         end
 
         return false, 'Invalid message content body'
