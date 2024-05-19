@@ -42,7 +42,7 @@ export type Session = {
     Main interface for interacting with Discord.
 
     :::info Topologically-aware
-        All functions bellow need an valid token and a opened gateway to be used.  
+        All functions bellow need a valid token and a opened gateway to be used.  
     :::
 
 ]=]
