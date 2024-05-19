@@ -30,7 +30,7 @@ export type Gateway = {
 return Lumi.component('Gateway', function(self, token: string, client: Listener, serializer: Serializer): Gateway
     --// Private
     local heartbeatInterval
-    local SESSION = {}
+    local session = {}
     local eventSequence
 
     local urlHost
@@ -41,19 +41,16 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     local CodeHandler = Listen()
 
     local function sendHeartBeat()
-        print('Heartbeat sent')
         Socket.send(1, eventSequence)
     end
 
     local function heartBeat()
-        print('Starting to heartbeat')
         while task.wait(heartbeatInterval) do
             sendHeartBeat()
         end
     end
 
     local function setupHeartBeat(package: Payload)
-        print('Setting up everything')
         heartbeatInterval = package.d.heartbeat_interval * 10^-3 * .75
         if not Heartbeating then
             Heartbeating = task.spawn(heartBeat)
@@ -61,9 +58,8 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
 
     local function handleDispatch(package: Payload)
-        print('Dispatch: ' .. package.t)
         if package.t == 'READY' then
-            SESSION = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
+            session = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
         eventSequence = package.s
     
@@ -74,18 +70,16 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
 
     local function tryResume(closeCode: number?)
-        print('Trying to resume:' .. tostring(closeCode))
         local canResume = Constants.CLOSE_CODES[closeCode]
-        if canResume == (nil or true) then
+        if canResume or canResume == nil then
             self.resume()
         else
-            table.clear(SESSION)
+            table.clear(session)
             self.socket(urlHost, urlPath)
         end
     end
 
     local function initCodeHandler()
-        print('Initing handlers')
         CodeHandler.listen(Codes.hello, setupHeartBeat)
         CodeHandler.listen(Codes.reconnect, tryResume)
         CodeHandler.listen(Codes.dispatch, handleDispatch)
@@ -93,13 +87,11 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
     
     local function handshake()
-        print('Handshake!')
         Socket.send(2, Constants.defaultIdentify(token))
     end
 
     local function socket()
-        print('Opening socket!')
-        Socket = Websocket(SESSION.URL or urlHost, urlPath, CodeHandler)
+        Socket = Websocket(session.URL or urlHost, urlPath, CodeHandler)
         Socket.open()
         handshake()
     end
@@ -119,7 +111,7 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     function self.resume()
         Socket.close()
         socket()
-        Socket.send(6, {token = token, session_id = SESSION.ID, seq = eventSequence})
+        Socket.send(6, {token = token, session_id = session.ID, seq = eventSequence})
     end
 
     return self

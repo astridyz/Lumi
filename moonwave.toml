@@ -1,0 +1,14 @@
+title = "Lumi"
+gitRepoUrl = "https://github.com/astridyz/Lumi"
+
+gitSourceBranch = "master"
+changelog = true
+classOrder = []
+
+[docusaurus]
+onBrokenLinks = "throw"
+onBrokenMarkdownLinks = "warn"
+
+[footer]
+style = "dark"
+copyright = "Copyright © 2024 Astrid. Built with Moonwave and Docusaurus"

@@ -4,6 +4,12 @@ type Message = Message.Message
 local Guild = require 'Structure/Serialized/Guild'
 type Guild = Guild.Guild
 
+export type Event<args...> = {
+    payload: (args...) -> (),
+    index: string,
+    name: string
+}
+
 return {
     hello = {
         payload = {},

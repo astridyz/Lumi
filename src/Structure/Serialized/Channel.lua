@@ -22,7 +22,7 @@ return Lumi.container('Channel', function(self, data): Channel
     self.name = data.name
     self.topic = data.topic
     self.nsfw = data.nsfw
-    self.slowmode = data.rate_limit_per_user
+    self.slowmode = data.rate_limit_per_users
     self.parentID = data.parent_id
 
     return self
