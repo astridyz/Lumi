@@ -16,7 +16,7 @@ export type Socket = {
 }
 
 --// This
-return Lumi.component('Websocket', function(self, host: string, path: string, listener: Listener): Socket
+return Lumi.component('Websocket', function(self, host: string, path: string, codeHandler: Listener): Socket
     --// Private
     local httpSocket
     local IS_SOCKET_ACTIVE
@@ -24,7 +24,7 @@ return Lumi.component('Websocket', function(self, host: string, path: string, li
     
     local function decode(package: string)
         local payload = net.jsonDecode(package)
-        listener.emit(payload.op, payload)
+        codeHandler.emit(payload.op, payload)
     end
 
     local function process()
@@ -32,7 +32,7 @@ return Lumi.component('Websocket', function(self, host: string, path: string, li
 
             if httpSocket.closeCode then
                 IS_SOCKET_ACTIVE = false
-                listener.emit(7, httpSocket.closeCode)
+                codeHandler.emit(7, httpSocket.closeCode)
                 return
             end
                 
@@ -40,7 +40,7 @@ return Lumi.component('Websocket', function(self, host: string, path: string, li
             
             if not success or not package then
                 IS_SOCKET_ACTIVE = false
-                listener.emit(7, httpSocket.closeCode)
+                codeHandler.emit(7, httpSocket.closeCode)
                 return
             end
 

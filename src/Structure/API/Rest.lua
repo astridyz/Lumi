@@ -29,7 +29,7 @@ return Lumi.component('Rest', function(self): API
     local Token
     local Headers
 
-    local function request(method: httpMethod, endpoint: string, payload: Data): (Data, Error)
+    local function request(method: httpMethod, endpoint: string, payload: Data?): (Data?, Error)
         assert(Token, 'Attempt to do an API request without a valid bot token')
     
         local URL = Constants.apiUrl .. endpoint

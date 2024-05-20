@@ -3,12 +3,11 @@
 local Lumi = require '../Lumi'
 
 local Rest = require 'API/Rest'
-local Gateway = require 'API/Gateway'
+local Shard = require 'API/Shard'
 local Listen = require 'Listen'
 local Cache = require 'Cache'
 local Serializer = require 'Serializer'
 
-local Constants = require '../Constants'
 local Events = require '../Events'
 
 local task = require '@lune/task'
@@ -28,11 +27,12 @@ type Event<args...> = Events.Event<args...>
 
 export type Session = {
     login: (token: string) -> (Data?, Error?),
-    connect: () -> (),
+    connect: () -> string?,
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
     getGuild: (ID: string) -> Guild?,
     getUser: (ID: string) -> User?,
     sendMessage: (channelID: string, content: {[string]: any} | string) -> (boolean, string?),
+    user: User
 }
 
 --[=[
@@ -51,9 +51,10 @@ export type Session = {
 return Lumi.component('Session', function(self): Session
     --// Private
     local Token;
+    local Shards = {}
 
     local API = Rest()
-    local Listener = Listen()
+    local EventHandler = Listen()
 
     local Guilds = Cache('Guild', 'k', Guild)
     local Users = Cache('User', 'k', User)
@@ -78,8 +79,12 @@ return Lumi.component('Session', function(self): Session
         assert(token ~= nil, 'No Token have been sent.')
         Token = token
 
-        local _, err = API.authenticate(Token)
+        local botUser, err = API.authenticate(Token)
         assert(not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
+
+        if botUser then
+            self.user = Serializer.data(botUser, User)
+        end
     end
 
     --[=[
@@ -89,15 +94,25 @@ return Lumi.component('Session', function(self): Session
         Connects in Discord Gateway, opening the websocket connection.  
         After calling it, your bot should go online and receive all Discord events.
 
+        @return (error: string?)
+
     ]=]
 
-    function self.connect()
+    function self.connect(): string?
         assert(Token ~= nil, 'No token available, authenticate first.')
-        local Data, _ = API.getGateway()
-        if Data then
-            Gateway(Token, Listener, Serializer).socket(Data.url, Constants.gatewayPath)
+
+        local Data, err = API.getGatewayBot()
+        assert(not err or Data == nil, 'Could not authenticate: ' .. tostring(err and err.message))
+
+        for shardID = 1, Data and Data.shards do
+            local shard = Shard(Token, EventHandler, Serializer)
+            Shards[shardID] = shard
+
+            coroutine.wrap(shard.socket)(shardID - 1, Data and Data.shards, Data and Data.url)
             task.wait(1)
         end
+
+        return nil
     end
 
     --[=[
@@ -119,7 +134,7 @@ return Lumi.component('Session', function(self): Session
 
     function self.listen<args...>(event : Event<args...>, callback: (args...) -> ())
         assert(Events[event.index], 'Invalid event type')
-        return Listener.listen(event.name, callback)
+        return EventHandler.listen(event.name, callback)
     end
 
     --- @within Session

@@ -21,20 +21,22 @@ type Payload = Serializer.Payload
 type Serializer = Serializer.Serializer
 
 export type Gateway = {
-    socket: (host: string, path: string) -> (),
+    socket: (shardID: number, totalShard: number, host: string) -> (),
     reconnect: () -> (),
     resume: () -> (),
 }
 
 --// This
-return Lumi.component('Gateway', function(self, token: string, client: Listener, serializer: Serializer): Gateway
+return Lumi.component('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer): Gateway
     --// Private
     local heartbeatInterval
     local session = {}
     local eventSequence
+    local ID
+    local totalShards
 
     local urlHost
-    local urlPath
+    local urlPath = Constants.gatewayPath
     
     local Heartbeating
     local Socket: Socket
@@ -60,22 +62,25 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     local function handleDispatch(package: Payload)
         if package.t == 'READY' then
             session = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
+            print(package.t .. ' on shard: ' .. tostring(ID))
         end
         eventSequence = package.s
     
         local event, data = serializer.payload(package)
         if event and data then
-            client.emit(event, data)
+            EventHandler.emit(event, data)
         end
     end
 
     local function tryResume(closeCode: number?)
+        print('Trying to resume: ' .. tostring(closeCode))
+
         local canResume = Constants.CLOSE_CODES[closeCode]
         if canResume or canResume == nil then
             self.resume()
         else
             table.clear(session)
-            self.socket(urlHost, urlPath)
+            self.socket(ID, totalShards, urlHost)
         end
     end
 
@@ -87,7 +92,11 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
     
     local function handshake()
-        Socket.send(2, Constants.defaultIdentify(token))
+        print('Handshake on shard: ' .. tostring(ID))
+        
+        local Identify = Constants.defaultIdentify(token)
+        Identify.shard = {ID, totalShards}
+        Socket.send(2, Identify)
     end
 
     local function socket()
@@ -97,8 +106,11 @@ return Lumi.component('Gateway', function(self, token: string, client: Listener,
     end
 
     --// Public
-    function self.socket(host: string, path: string)
-        urlHost = host; urlPath = path
+    function self.socket(shardID: number, totalShardCount: number, host: string)
+        urlHost = host
+        ID = shardID
+        totalShards = totalShardCount
+        
         initCodeHandler()
         socket()
     end

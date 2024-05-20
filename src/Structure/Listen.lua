@@ -34,7 +34,8 @@ export type Listener = {
 
     Connection = listener.listen('welcome', callback)
 
-    listener.emit('Welcome') --> Thanks!
+    listener.emit('Welcome')
+    --> Output: Thanks!
 
     ```
 
@@ -51,6 +52,7 @@ return Lumi.component('Listener', function(self): Listener
     --[=[
 
         @within Listener
+
         @return () -> () -- When the return function is called, the listener will stop listening to the given event.
         Listen to a event and when it is emitted, calls a callback.
 
@@ -70,9 +72,10 @@ return Lumi.component('Listener', function(self): Listener
         end
     end
 
-        --[=[
+    --[=[
 
         @within Listener
+
         Calls every callback that is listening to a given event.
 
     ]=]
