@@ -1,15 +1,13 @@
 title = "Lumi"
 gitRepoUrl = "https://github.com/astridyz/Lumi"
 
-gitSourceBranch = "master"
+gitSourceBranch = "main"
 changelog = true
 
-[[classOrder]]
-section = "Components"
-classes = ["Cache", "Serializer", "Listener"]
-
-[[classOrder]]
-classes = ["Containers", "Session"]
+classOrder = [
+    "Session",
+    "Containers"
+]
 
 [docusaurus]
 onBrokenLinks = "throw"

@@ -62,6 +62,16 @@ return Lumi.component('Session', function(self): Session
 
     local Serializer = Serializer(self :: any, {Guilds, Users, Channel})
 
+    --[=[
+
+    @within Session
+    @prop user User
+
+    The bot user object.
+
+    ]=]
+    self.user = {} :: User
+
     --// Methods
 
     --[=[

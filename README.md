@@ -1,2 +1,7 @@
-# Lumi
-A Discord API wrapper writen in Luau using Lune v0.8.3
+<div align="center">
+	<img src=".moonwave/static/logo.svg" alt="Lumi" width="600" />
+	<br><br><br>
+	<p>A Discord API wrapper for the Luau language</p>
+	<a href="https://astridyz.github.io/Lumi/"><strong>View documentation (●'◡'●)</strong></a>
+  <br><br><br>
+</div>
