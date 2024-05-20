@@ -26,12 +26,12 @@ type Data = Lumi.Data
 type Event<args...> = Events.Event<args...>
 
 export type Session = {
-    login: (token: string) -> (Data?, Error?),
+    login: (token: string) -> (),
     connect: () -> string?,
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
     getGuild: (ID: string) -> Guild?,
     getUser: (ID: string) -> User?,
-    sendMessage: (channelID: string, content: {[string]: any} | string) -> (boolean, string?),
+    sendMessage: (channelID: string, content: {[string]: any} | string) -> (string?),
     user: User
 }
 
@@ -170,20 +170,20 @@ return Lumi.component('Session', function(self): Session
     ]=]
     
 
-    function self.sendMessage(channelID: string, content: {[string]: any} | string): (boolean, string?)
+    function self.sendMessage(channelID: string, content: {[string]: any} | string): (string?)
         assert(Token == nil, 'No token available, authenticate first.')
 
         if type(content) == 'table' then
-            local result, err = API.createMessage(channelID, content)
-            return result and true or false, err and err.message
+            local _, err = API.createMessage(channelID, content)
+            return err and err.message or nil
         end
 
         if type(content) == 'string' then
-            local result, err = API.createMessage(channelID, {content = content})
-            return result and true or false, err and err.message
+            local _, err = API.createMessage(channelID, {content = content})
+            return err and err.message or nil
         end
 
-        return false, 'Invalid message content body'
+        return 'Invalid message content body'
     end
 
     return self

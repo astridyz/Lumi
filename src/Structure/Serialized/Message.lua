@@ -22,8 +22,8 @@ export type Message = {
     everyone: boolean,
     channel: Channel,
     content: string,
-    respond: (content: any) -> (Data?, string),
-    reply: (content: any) -> (Data?, string)
+    respond: (content: any) -> (boolean, string?),
+    reply: (content: any) -> (boolean, string?)
 }
 
 --[=[
