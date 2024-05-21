@@ -9,9 +9,20 @@ classOrder = [
     "Containers"
 ]
 
+[navbar]
+title = ""
+
 [docusaurus]
 onBrokenLinks = "throw"
 onBrokenMarkdownLinks = "warn"
+favicon = "/static/favicon.svg"
+
+[navbar.logo]
+alt = "Lumi"
+src = "/logo.svg"
+
+[home]
+includeReadme = false
 
 [footer]
 style = "dark"

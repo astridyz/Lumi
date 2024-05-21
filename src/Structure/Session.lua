@@ -162,7 +162,7 @@ return Lumi.component('Session', function(self): Session
 
         @within Session
         @param content {} | string
-        @return (success: boolean, error: string?) 
+        @return (error: string?) 
 
         Sends a message in the given channel.  
         The content  table needs to be created using constructors available in Lumi.

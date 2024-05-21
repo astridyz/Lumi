@@ -1,0 +1,4 @@
+.heroBanner {
+    display: flex;
+    flex-direction: column;
+}
