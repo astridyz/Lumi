@@ -23,7 +23,7 @@ export default function Home() {
     return (
         <Layout
             title="Home"
-            description="Descrição da minha home page">
+            description="Lumi is a Discord API wrapper written in Luau">
             <HomepageHeader />
             <main>
             </main>

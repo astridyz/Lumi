@@ -41,10 +41,6 @@ export type Session = {
 
     Main interface for interacting with Discord.
 
-    :::info Topologically-aware
-        All functions bellow need a valid token and a opened gateway to be used.  
-    :::
-
 ]=]
 
 --// This
@@ -103,6 +99,10 @@ return Lumi.component('Session', function(self): Session
         
         Connects in Discord Gateway, opening the websocket connection.  
         After calling it, your bot should go online and receive all Discord events.
+
+        :::info Topologically-aware
+        This function is only usable if called within the context of Session.login 
+        :::
 
         @return (error: string?)
 
@@ -166,6 +166,10 @@ return Lumi.component('Session', function(self): Session
 
         Sends a message in the given channel.  
         The content  table needs to be created using constructors available in Lumi.
+
+        :::info Topologically-aware
+        This function is only usable if called within the context of Session.login 
+        :::
 
     ]=]
     

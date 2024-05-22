@@ -22,8 +22,8 @@ export type Message = {
     everyone: boolean,
     channel: Channel,
     content: string,
-    respond: (content: any) -> (boolean, string?),
-    reply: (content: any) -> (boolean, string?)
+    respond: (content: any) -> (string?),
+    reply: (content: any) -> (string?)
 }
 
 --[=[
@@ -37,8 +37,8 @@ export type Message = {
     .everyone boolean
     .channel Channel
     .content string
-    .respond (content: {} | string) -> (success: Boolean, error: string?) -- Send a message in the current channel
-    .reply (content: {} | string) -> (success: Boolean, error: string?) -- Send a message replying to the message returned by messageCreate event
+    .respond (content: {} | string) -> (error: string?) -- Send a message in the current channel
+    .reply (content: {} | string) -> (error: string?) -- Send a message replying to the message returned by messageCreate event
 
 ]=]
 
@@ -56,11 +56,11 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
 
     --// Methods
     function self.respond(content: any)
-        return client.sendMessage(self.channelID, content)
+        return client.sendMessage(self.channel.ID, content)
     end
 
     function self.reply(content: any)
-        return client.sendMessage(self.channelID, {
+        return client.sendMessage(self.channel.ID, {
             content = content,
             message_reference = {message_id = self.ID}
         })

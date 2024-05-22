@@ -40,6 +40,14 @@ export type Payload = {
 
 --// This
 return Lumi.component('Serializer', function(self, client: any, containers: {Cache<any>}): Serializer
+    --// Private
+    local function InsertInCache(data)
+        local cache = self.syncs.get(data.container)
+        if cache then
+            cache.set(data.ID, data)
+        end
+    end
+
     --// Public
 
     --[=[
@@ -54,13 +62,6 @@ return Lumi.component('Serializer', function(self, client: any, containers: {Cac
 
     for _, cache in ipairs(containers) do
         self.syncs.set(cache.name, cache)
-    end
-
-    local function InsertInCache(data)
-        local cache = self.syncs.get(data.container)
-        if cache then
-            cache.set(data.ID, data)
-        end
     end
 
     --// Methods
