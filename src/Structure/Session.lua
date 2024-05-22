@@ -1,38 +1,33 @@
 --!strict
 --// Requires
 local Lumi = require '../Lumi'
+local Events = require '../Events'
+local task = require '@lune/task'
 
 local Rest = require 'API/Rest'
 local Shard = require 'API/Shard'
 local Listen = require 'Listen'
-local Cache = require 'Cache'
 local Serializer = require 'Serializer'
+local State = require 'State'
 
-local Events = require '../Events'
-
-local task = require '@lune/task'
-
-local Guild = require 'Serialized/Guild'
 local User = require 'Serialized/User'
-local Channel = require 'Serialized/Channel'
 
 --// Types
 type Error = Rest.Error
 
-type Guild = Guild.Guild
-type User = User.User
-
 type Data = Lumi.Data
 type Event<args...> = Events.Event<args...>
+
+type State = State.State
+type User = User.User
 
 export type Session = {
     login: (token: string) -> (),
     connect: () -> string?,
+    state: State,
+    user: User,
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
-    getGuild: (ID: string) -> Guild?,
-    getUser: (ID: string) -> User?,
     sendMessage: (channelID: string, content: {[string]: any} | string) -> (string?),
-    user: User
 }
 
 --[=[
@@ -51,22 +46,22 @@ return Lumi.component('Session', function(self): Session
 
     local API = Rest()
     local EventHandler = Listen()
+    local State = State()
 
-    local Guilds = Cache('Guild', 'k', Guild)
-    local Users = Cache('User', 'k', User)
-    local Channel = Cache('Channel', 'k', Channel)
+    local Serializer = Serializer(self :: any, State)
 
-    local Serializer = Serializer(self :: any, {Guilds, Users, Channel})
+    --// Public
 
     --[=[
 
-    @within Session
-    @prop user User
+        @within Session
+        @prop state State
 
-    The bot user object.
+        The currently state for all data in session.
 
     ]=]
-    self.user = {} :: User
+
+    self.state = State
 
     --// Methods
 
@@ -142,20 +137,9 @@ return Lumi.component('Session', function(self): Session
 
     ]=]
 
-    function self.listen<args...>(event : Event<args...>, callback: (args...) -> ())
+    function self.listen<args...>(event: Event<args...>, callback: (args...) -> ())
         assert(Events[event.index], 'Invalid event type')
         return EventHandler.listen(event.name, callback)
-    end
-
-    --- @within Session
-    function self.getGuild(ID: string): Guild?
-        return Guilds.get(ID)
-    end
-
-
-    --- @within Session
-    function self.getUser(ID: string): User?
-        return Users.get(ID)
     end
 
     --[=[
@@ -175,7 +159,7 @@ return Lumi.component('Session', function(self): Session
     
 
     function self.sendMessage(channelID: string, content: {[string]: any} | string): (string?)
-        assert(Token == nil, 'No token available, authenticate first.')
+        assert(Token ~= nil, 'No token available, authenticate first.')
 
         if type(content) == 'table' then
             local _, err = API.createMessage(channelID, content)

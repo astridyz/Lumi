@@ -29,7 +29,11 @@ end
 
 ]=]
 
-function Lumi.container<Fields>(name: string, wrapper: (self: Container & Fields, Data, ...any) -> Fields): (data: Data, client: any, serializer: any) -> Fields?
+export type Container = {
+    container: string
+}
+
+function Lumi.container<Fields>(name: string, wrapper: (self: Container & Fields, Data, ...any) -> Fields): (data: Data, client: any, serializer: any) -> Fields
     return function(data: Data, client: any, serializer: any)
         local self = {}
         
@@ -41,10 +45,6 @@ function Lumi.container<Fields>(name: string, wrapper: (self: Container & Fields
 end
 
 export type Data = {[string]: any}
-
-export type Container = {
-    container: string
-}
 
 export type Prototype = typeof(setmetatable(
     {} :: {

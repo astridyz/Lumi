@@ -8,6 +8,7 @@ export type User = {
     username: string,
     discriminator: string,
     nickname: string,
+    isBot: boolean,
     mention: () -> string
 }
 
@@ -19,6 +20,7 @@ export type User = {
     .username String
     .discriminator string -- Discriminators are deprecated
     .nickname string
+    .isBot boolean
     .mention () -> string -- Returns a formated mentioning string
 
 ]=]
@@ -30,6 +32,7 @@ return Lumi.container('User', function(self, data): User
     self.username = data.username
     self.discriminator = data.discriminator
     self.nickname = data.global_name
+    self.isBot = data.bot
 
     --// Methods
     function self.mention(): string

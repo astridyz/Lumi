@@ -32,6 +32,7 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
 
             if httpSocket.closeCode then
                 IS_SOCKET_ACTIVE = false
+                print(httpSocket.closeCode)
                 codeHandler.emit(7, httpSocket.closeCode)
                 return
             end

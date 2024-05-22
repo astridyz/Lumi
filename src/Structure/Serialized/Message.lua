@@ -1,13 +1,14 @@
 --!strict
 --// Requires
 local Lumi = require '../../Lumi'
+
 local User = require 'User'
 local Member = require 'Member'
 local Guild = require 'Guild'
 local Channel = require 'Channel'
 
 --// Types
-type Data = {[string]: any}
+type Data = Lumi.Data
 
 type User = User.User
 type Member = Member.Member
@@ -49,9 +50,9 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
     self.everyone = data.mention_everyone
     self.content = data.content
 
-    self.channel = serializer.syncs.get('Channel').get(data.channel_id) or nil
+    self.channel =  client.state.getChannel(data.channel_id) or nil
     self.author = serializer.data(data.author, User)
-    self.guild = data.guild_id and serializer.syncs.get('Guild').get(data.guild_id) or nil
+    self.guild = data.guild_id and client.state.getGuild(data.guild_id) or nil
     self.member = serializer.data(data.member, Member) or nil
 
     --// Methods

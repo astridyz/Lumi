@@ -75,10 +75,12 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     local function tryResume(closeCode: number?)
         print('Trying to resume: ' .. tostring(closeCode))
 
-        local canResume = Constants.CLOSE_CODES[closeCode]
+        local canResume = Constants.closeCodes[closeCode]
         if canResume or canResume == nil then
             self.resume()
+            print('Resuming')
         else
+            print('Reconnecting')
             table.clear(session)
             self.socket(ID, totalShards, urlHost)
         end
@@ -96,6 +98,7 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
         
         local Identify = Constants.defaultIdentify(token)
         Identify.shard = {ID, totalShards}
+
         Socket.send(2, Identify)
     end
 

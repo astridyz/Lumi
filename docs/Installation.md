@@ -25,7 +25,7 @@ Once you have the Luau runtime installed, you can proceed to install Lumi using 
 
 To add Lumi as a submodule in your project repository, follow these steps:
 
-- Navigate to your project repository
+- Navigate to your project repository;
 
 - In order to add Lumi as a submodule in your repository, run the following commands:
 
@@ -44,7 +44,9 @@ $ git submodule update
   We recommend you to add `/libs` to your .gitignore file.
 :::
 
-- Require Lumi folder in your `file.lua`:
+- Create your source folder and add a file `bot.lua` in it.
+
+- Require Lumi folder in your `bot.lua`:
 
 ```lua
 --[[
@@ -52,7 +54,7 @@ $ git submodule update
     libs/
       Lumi/
     src/
-      file.lua
+      bot.lua
 ]]
 
 local Lumi = require('../libs/Lumi')

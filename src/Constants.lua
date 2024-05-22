@@ -23,7 +23,7 @@ local Constants = {
         heartbeatAck = 11
     },
     
-    CLOSE_CODES = {
+    closeCodes = {
         [4000] = true,  --// Unknown error
         [4001] = true,  --// Unknown opcode
         [4002] = true,  --// Decode error

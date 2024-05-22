@@ -2,14 +2,18 @@
 --// Requires
 local Lumi = require '../Lumi'
 local Constants = require '../Constants'
+
 local Cache = require 'Cache'
+local State = require 'State'
 
 --// Types
-type Data = {[string]: any}
 type Cache<asyncs> = Cache.Cache<asyncs>
 
+type State = State.State
+
+type Data = Lumi.Data
+
 export type Serializer = {
-    syncs: Cache<Cache<any>>,
     payload: (package: Payload) -> (string?, {any}?),
     data: (rawData: Data, factory: any) -> Data
 }
@@ -39,31 +43,7 @@ export type Payload = {
 ]=]
 
 --// This
-return Lumi.component('Serializer', function(self, client: any, containers: {Cache<any>}): Serializer
-    --// Private
-    local function InsertInCache(data)
-        local cache = self.syncs.get(data.container)
-        if cache then
-            cache.set(data.ID, data)
-        end
-    end
-
-    --// Public
-
-    --[=[
-
-        @within Serializer
-        @prop syncs Cache<Cache>
-        Yes, a cache of caches.
-
-    ]=]
-
-    self.syncs = Cache('Serialized', 'k', Cache)
-
-    for _, cache in ipairs(containers) do
-        self.syncs.set(cache.name, cache)
-    end
-
+return Lumi.component('Serializer', function(self, client: any, state: State): Serializer
     --// Methods
 
     --[=[
@@ -81,8 +61,7 @@ return Lumi.component('Serializer', function(self, client: any, containers: {Cac
         end
         
         local data = container(package.d, client, self)
-        assert(data.container)
-        InsertInCache(data)
+        state.addData(data)
     
         return package.t, table.freeze(data)
     end
@@ -101,8 +80,7 @@ return Lumi.component('Serializer', function(self, client: any, containers: {Cac
             return nil
         end
         local data = factory(rawData)
-        assert(data.container)
-        InsertInCache(data)
+        state.addData(data)
 
         return table.freeze(data)
     end
