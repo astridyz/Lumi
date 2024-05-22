@@ -19,10 +19,9 @@ src/
 ### Getting your bot online
 
 Lumi package has 3 importants modules inside it: Manager, Session and Events.
-The main interface for interacting with Discord is the Session module, is is your client. You can check more about it [on its API page](/api/Session)
+The main interface for interacting with Discord is the Session module, it is your client. You can check more about it [on its API page.](/api/Session)
 
-Now, lets open a connection to Discord and make your bot go online  
-On your `main.lua` put this code:
+Now, lets open a connection to Discord and make your bot go online. On your `main.lua` put this code:
 
 ```lua
 --// Require Lumi
