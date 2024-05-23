@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from "@docusaurus/Link";
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
@@ -23,16 +24,17 @@ function HomepageHeader() {
                     />
                     <div className={styles.textContent}>
                         <p className={styles.heroTitle}>
-                            A Discord API wrapper
+                            A Discord API Wrapper
                         </p>
                         <p className={styles.heroSubtitle}>
                             Connect to Discord quickly and easily with our powerful library
                         </p>
-                        <div className={styles.buttons}>
-                            <a className="button button--primary button--lg" href="/docs/intro">
-                                Get Started
-                            </a>
-                        </div>
+                        <Link
+                            className="button button--primary button--lg"
+                            to="/docs/intro"
+                        >
+                            Get Started
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -41,7 +43,7 @@ function HomepageHeader() {
     );
 }
 
-function Feature({ title, description, icon }) {
+function Feature({ title, description }) {
     return (
         <div className="col col--4">
             <div className={styles.feature}>
@@ -67,7 +69,7 @@ function Features() {
             description: 'Unlock the full potential of Lumi with an extensive collection of examples and comprehensive documentation.'
         }
     ];
-    
+
     return (
         <section className={styles.features}>
             <div className="container">
@@ -87,7 +89,7 @@ function Features() {
 
 export default function Home() {
     return (
-        <Layout description="Lumi: Uma biblioteca para API do Discord">
+        <Layout description="A Discord API Wrapper written in Luau">
             <HomepageHeader />
             <main>
                 <Features />

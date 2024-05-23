@@ -4,7 +4,7 @@
     flex-direction: column;
     align-items: center;
     padding: 4.2rem 2rem 7rem;
-    background-color: #fff8e1;
+    background-color: #edf7fa;
     color: #333;
     text-align: center;
     overflow: hidden;
@@ -39,7 +39,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -40px;
+    bottom: -60px;
     z-index: 0;
     display: block;
 }
@@ -63,9 +63,8 @@
 }
 
 .buttons .button--primary {
-    background-color: #5c6bc0;
-    color: white;
-    border: none;
+    background-color: #469BFF;
+    color: #469BFF;
     padding: 5rem 2rem;
     font-size: 1.25rem;
     border-radius: 50px;
@@ -79,7 +78,7 @@
 
 .features {
     padding: 2rem;
-    background-color: #292d3e;
+    background-color: #2d3658;
     text-align: center;
     color: white;
     margin: 0;
