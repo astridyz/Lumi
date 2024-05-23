@@ -11,6 +11,9 @@ local Constants = {
 
     gatewayPath = '/?v=10&encoding=json/',
 
+    defaultDelay = 1, --// Default http delay in seconds
+    defaultGatewayDelay = 0.5, --// Half second or 500 milliseconds
+
     gatewayCodes = {
         dispatch = 0,
         heartbeat = 1,

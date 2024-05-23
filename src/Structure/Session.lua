@@ -9,6 +9,7 @@ local Shard = require 'API/Shard'
 local Listen = require 'Listen'
 local Serializer = require 'Serializer'
 local State = require 'State'
+local Mutex = require 'Mutex'
 
 local User = require 'Serialized/User'
 
@@ -47,6 +48,7 @@ return Lumi.component('Session', function(self): Session
     local API = Rest()
     local EventHandler = Listen()
     local State = State()
+    local Mutex = Mutex()
 
     local Serializer = Serializer(self :: any, State)
 
@@ -110,7 +112,7 @@ return Lumi.component('Session', function(self): Session
         assert(not err or Data == nil, 'Could not authenticate: ' .. tostring(err and err.message))
 
         for shardID = 1, Data and Data.shards do
-            local shard = Shard(Token, EventHandler, Serializer)
+            local shard = Shard(Token, EventHandler, Serializer, Mutex)
             Shards[shardID] = shard
 
             coroutine.wrap(shard.socket)(shardID - 1, Data and Data.shards, Data and Data.url)

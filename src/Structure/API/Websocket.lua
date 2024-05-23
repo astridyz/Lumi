@@ -1,13 +1,20 @@
 --!strict
 --// Requires
 local Lumi = require '../../Lumi'
+local Constants = require '../../Constants'
+
+local gatewayDelay = Constants.defaultGatewayDelay
+
 local net = require '@lune/net'
 local task = require '@lune/task'
+
 local Listen = require '../Listen'
+local Mutex = require '../Mutex'
 
 --// Types
 type Websocket = net.WebSocket
 type Listener = Listen.Listener
+type Mutex = Mutex.Mutex
 
 export type Socket = {
     send: (opcode: number, payload: any) -> (),
@@ -16,7 +23,7 @@ export type Socket = {
 }
 
 --// This
-return Lumi.component('Websocket', function(self, host: string, path: string, codeHandler: Listener): Socket
+return Lumi.component('Websocket', function(self, host: string, path: string, codeHandler: Listener, mutex: Mutex): Socket
     --// Private
     local httpSocket
     local IS_SOCKET_ACTIVE
@@ -52,9 +59,10 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
     --// Public
     function self.send(opcode: number, data: any)
         assert(httpSocket, 'Attempt to send payload without a valid socket')
-        httpSocket.send(
-            net.jsonEncode {op = opcode, d = data}
-        )
+        
+        mutex.lock()
+        httpSocket.send(net.jsonEncode {op = opcode, d = data})
+        mutex.unlockAfter(gatewayDelay)
     end
 
     function self.open()

@@ -4,6 +4,7 @@ local Lumi = require '../../Lumi'
 local Listen = require '../Listen'
 local Websocket = require 'Websocket'
 local Serializer = require '../Serializer'
+local Mutex = require '../Mutex'
 
 local Constants = require '../../Constants'
 local Codes = Constants.gatewayCodes
@@ -16,6 +17,7 @@ type httpSocket = net.WebSocket
 
 type Listener = Listen.Listener
 type Socket = Websocket.Socket
+type Mutex = Mutex.Mutex
 
 type Payload = Serializer.Payload
 type Serializer = Serializer.Serializer
@@ -27,7 +29,7 @@ export type Gateway = {
 }
 
 --// This
-return Lumi.component('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer): Gateway
+return Lumi.component('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
     --// Private
     local heartbeatInterval
     local session = {}
@@ -60,8 +62,6 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
 
     local function handleDispatch(package: Payload)
-        print(package.t .. ' on shard: ' .. tostring(ID))
-
         if package.t == 'READY' then
             session = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
@@ -73,14 +73,10 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
 
     local function tryResume(closeCode: number?)
-        print('Trying to resume: ' .. tostring(closeCode))
-
         local canResume = Constants.closeCodes[closeCode]
         if canResume or canResume == nil then
             self.resume()
-            print('Resuming')
         else
-            print('Reconnecting')
             table.clear(session)
             self.socket(ID, totalShards, urlHost)
         end
@@ -94,8 +90,6 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
     
     local function handshake()
-        print('Handshake on shard: ' .. tostring(ID))
-        
         local Identify = Constants.defaultIdentify(token)
         Identify.shard = {ID, totalShards}
 
@@ -103,7 +97,7 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
 
     local function socket()
-        Socket = Websocket(session.URL or urlHost, urlPath, CodeHandler)
+        Socket = Websocket(session.URL or urlHost, urlPath, CodeHandler, mutex)
         Socket.open()
         handshake()
     end

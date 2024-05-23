@@ -19,29 +19,29 @@ return Lumi.component('Mutex', function(self): Mutex
 
     --// Public
     function self.lock()
-        local this = coroutine.running()
-
         if not Active then
             Active = true
             return
         end
 
-        table.insert(Queue, this)
+        table.insert(Queue, coroutine.running())
         coroutine.yield()
     end
 
     function self.unlock()
-        if #Queue > 0 then
-            task.wait(Timeout or 0)
+        task.wait(Timeout or 0)
 
+        if Queue[1] then
             local waiting = Queue[1]
             coroutine.resume(waiting)
 
             table.remove(Queue, 1)
             table.sort(Queue, function(a, b) return a < b end)
-        else
-            Active = false
+            return
         end
+
+        Active = false
+        Timeout = 0
     end
 
     function self.unlockAfter(seconds: number)
