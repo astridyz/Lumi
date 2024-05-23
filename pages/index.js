@@ -38,7 +38,7 @@ function HomepageHeader() {
                     </div>
                 </div>
             </div>
-            <img className={styles.homeWaves} src="waves.svg" alt="a soft wavey boundary between two sections of the website" />
+            <img className={styles.homeWaves} src="wave.svg" alt="A wave" />
         </header>
     );
 }
