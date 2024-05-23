@@ -12,6 +12,7 @@ export type Channel = {
     nsfw: boolean,
     slowmode: number,
     parentID: number,
+    newlyCreated: boolean
 }
 
 --[=[
@@ -26,6 +27,7 @@ export type Channel = {
     .nsfw boolean
     .slowmode number
     .parentID number
+    .newlyCreated boolean
 
 ]=]
 
@@ -33,12 +35,13 @@ export type Channel = {
 return Lumi.container('Channel', function(self, data): Channel
     --// Public
     self.ID = data.id
-    self.guildID = data.guild_id or nil
+    self.guildID = data.guild_id
     self.name = data.name
     self.topic = data.topic
     self.nsfw = data.nsfw
     self.slowmode = data.rate_limit_per_users
     self.parentID = data.parent_id
+    self.newlyCreated = data.newly_created
 
     return self
 end)

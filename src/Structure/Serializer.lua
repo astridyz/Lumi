@@ -14,7 +14,7 @@ type State = State.State
 type Data = Lumi.Data
 
 export type Serializer = {
-    payload: (package: Payload) -> (string?, {any}?),
+    payload: (package: Payload) -> (string, {any}?),
     data: (rawData: Data, factory: any) -> Data
 }
 
@@ -54,10 +54,11 @@ return Lumi.component('Serializer', function(self, client: any, state: State): S
 
     ]=]
 
-    function self.payload(package)
+    function self.payload(package): (string, {any}?)
         local container = Constants.payloads[package.t]
+        
         if not container then
-            return
+            return package.t, nil
         end
         
         local data = container(package.d, client, self)

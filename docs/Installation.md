@@ -21,7 +21,7 @@ To download Lune, [check their official website.](https://lune-org.github.io/doc
 
 ### Install Lumi via GitHub Submodules
 
-Once you have the Luau runtime installed, you can proceed to install Lumi using GitHub submodules. GitHub submodules are repositories nested inside other repositories. You chan check more about them [here.](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+Once you have the Luau runtime installed, you can proceed to install Lumi using GitHub submodules. GitHub submodules are repositories nested inside other repositories. You can check more about them [here.](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
 To add Lumi as a submodule in your project repository, follow these steps:
 

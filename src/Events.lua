@@ -7,6 +7,15 @@ type Guild = Guild.Guild
 local Channel = require 'Structure/Serialized/Channel'
 type Channel = Channel.Channel
 
+local User = require 'Structure/Serialized/User'
+type User = User.User
+
+local Member = require 'Structure/Serialized/Member'
+type Member = Member.Member
+
+local Role = require 'Structure/Serialized/Role'
+type Role = Role.Role
+
 export type Event<args...> = {
     payload: (args...) -> (),
     index: string,
@@ -14,30 +23,20 @@ export type Event<args...> = {
 }
 
 return {
-    hello = {
-        payload = {},
-        name = "HELLO",
-        index = "hello"
-    },
     ready = {
-        payload = {},
+        payload = function() end,
         name = "READY",
         index = "ready"
     },
     resumed = {
-        payload = {},
+        payload = function() end,
         name = "RESUMED",
         index = "resumed"
     },
     reconnect = {
-        payload = {},
+        payload = function() end,
         name = "RECONNECT",
         index = "reconnect"
-    },
-    invalidSession = {
-        payload = {},
-        name = "INVALID_SESSION",
-        index = "invalidSession"
     },
     applicationCommandPermissionsUpdate = {
         payload = {},
@@ -75,7 +74,7 @@ return {
         index = "channelUpdate"
     },
     channelDelete = {
-        payload = function(Channel: Channel) end,
+        payload = function(data: {ID: string, guild: Guild}) end,
         name = "CHANNEL_DELETE",
         index = "channelDelete"
     },
@@ -85,17 +84,17 @@ return {
         index = "channelPinsUpdate"
     },
     threadCreate = {
-        payload = {},
+        payload = function(Channel: Channel) end,
         name = "THREAD_CREATE",
         index = "threadCreate"
     },
     threadUpdate = {
-        payload = {},
+        payload = function(Channel: Channel) end,
         name = "THREAD_UPDATE",
         index = "threadUpdate"
     },
     threadDelete = {
-        payload = {},
+        payload = function(data: {ID: string, guild: Guild}) end,
         name = "THREAD_DELETE",
         index = "threadDelete"
     },
@@ -140,7 +139,7 @@ return {
         index = "guildUpdate"
     },
     guildDelete = {
-        payload = {},
+        payload = function(data: {ID: string}) end,
         name = "GUILD_DELETE",
         index = "guildDelete"
     },
@@ -150,12 +149,12 @@ return {
         index = "guildAuditLogEntryCreate"
     },
     guildBanAdd = {
-        payload = {},
+        payload = function(data: {guild: Guild, user: User}) end,
         name = "GUILD_BAN_ADD",
         index = "guildBanAdd"
     },
     guildBanRemove = {
-        payload = {},
+        payload = function(data: {guild: Guild, user: User}) end,
         name = "GUILD_BAN_REMOVE",
         index = "guildBanRemove"
     },
@@ -175,17 +174,17 @@ return {
         index = "guildIntegrationsUpdate"
     },
     guildMemberAdd = {
-        payload = {},
+        payload = function(Member: Member) end,
         name = "GUILD_MEMBER_ADD",
         index = "guildMemberAdd"
     },
     guildMemberRemove = {
-        payload = {},
+        payload = function(data: {guild: Guild, user: User}) end,
         name = "GUILD_MEMBER_REMOVE",
         index = "guildMemberRemove"
     },
     guildMemberUpdate = {
-        payload = {},
+        payload = function(Member: Member) end,
         name = "GUILD_MEMBER_UPDATE",
         index = "guildMemberUpdate"
     },
@@ -195,17 +194,17 @@ return {
         index = "guildMembersChunk"
     },
     guildRoleCreate = {
-        payload = {},
+        payload = function(role: Role) end,
         name = "GUILD_ROLE_CREATE",
         index = "guildRoleCreate"
     },
     guildRoleUpdate = {
-        payload = {},
+        payload = function(role: Role) end,
         name = "GUILD_ROLE_UPDATE",
         index = "guildRoleUpdate"
     },
     guildRoleDelete = {
-        payload = {},
+        payload = function(data: {ID: string, guild: Guild}) end,
         name = "GUILD_ROLE_DELETE",
         index = "guildRoleDelete"
     },

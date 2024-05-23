@@ -1,0 +1,45 @@
+--!strict
+--// Requires
+local Lumi = require '../../Lumi'
+
+local User = require 'User'
+
+--// This
+return Lumi.container('Specifics', function(self, data, client, serializer): any
+
+    --//Public
+    self.guild = data.guild_id and client.state.getGuild(data.guild_id)
+
+    --// Role delete case
+    if data.role_id then
+        self.ID = data.role_id
+        
+        self.guild.roles.remove(data.role_id)
+        client.state.removeData(self.ID, 'Role')
+
+        return self
+    end
+
+    --// Guild delete case
+    if data.unavailable then
+        self.ID = data.id
+
+        client.state.removeData(self.ID, 'Guild')
+
+        return self
+    end
+
+    --// Channel delete case
+    if data.type then
+        self.ID = data.id
+
+        client.state.removeData(self.ID, 'Channel')
+        self.guild.channels.remove(self.ID)
+
+        return self
+    end
+
+    self.user = data.user and serializer.data(data.user, User)
+
+    return self
+end)

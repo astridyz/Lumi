@@ -39,11 +39,11 @@ export type Guild = {
 --// This
 return Lumi.container('Guild', function(self, data, client, serializer): Guild
     --// Public
-    self.members = data.member_count or nil
-    self.ID = data.id or nil
-    self.name = data.name or nil
-    self.description = data.description or nil
-    self.locale = data.preferred_locale or nil
+    self.members = data.member_count
+    self.ID = data.id
+    self.name = data.name
+    self.description = data.description
+    self.locale = data.preferred_locale
 
     self.channels = Cache('myChannel', 'k', Channel)
 
@@ -52,6 +52,11 @@ return Lumi.container('Guild', function(self, data, client, serializer): Guild
             channel = serializer.data(channel, Channel)
             self.channels.set(channel.ID, channel)
         end
+    end
+
+    for _, thread in ipairs(data.threads) do
+        thread = serializer.data(thread, Channel)
+        self.channels.set(thread.ID, thread)
     end
 
     self.roles = Cache('myRole', 'k', Role)

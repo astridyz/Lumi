@@ -60,16 +60,16 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
 
     local function handleDispatch(package: Payload)
+        print(package.t .. ' on shard: ' .. tostring(ID))
+
         if package.t == 'READY' then
             session = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
-            print(package.t .. ' on shard: ' .. tostring(ID))
         end
+
         eventSequence = package.s
-    
+
         local event, data = serializer.payload(package)
-        if event and data then
-            EventHandler.emit(event, data)
-        end
+        EventHandler.emit(event, data)
     end
 
     local function tryResume(closeCode: number?)

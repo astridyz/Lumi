@@ -61,6 +61,7 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
     end
 
     function self.reply(content: any)
+        print(self.channel)
         return client.sendMessage(self.channel.ID, {
             content = content,
             message_reference = {message_id = self.ID}

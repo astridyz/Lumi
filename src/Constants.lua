@@ -2,6 +2,8 @@ local Message = require 'Structure/Serialized/message'
 local Guild = require 'Structure/Serialized/Guild'
 local Member = require 'Structure/Serialized/Member'
 local Channel = require 'Structure/Serialized/Channel'
+local Role = require 'Structure/Serialized/Role'
+local Specifics = require 'Structure/Serialized/Specifics'
 -- local User = require 'Structure/Serialized/User'
 
 local Constants = {
@@ -43,15 +45,38 @@ local Constants = {
     },
 
     payloads = {
+        --// Messages
         MESSAGE_CREATE = Message,
         MESSAGE_UPDATE = Message,
+
+        --// Guilds
         GUILD_CREATE = Guild,
         GUILD_UPDATE = Guild,
+        GUILD_DELETE = Specifics,
+
+        --// Member
         GUILD_MEMBER_ADD = Member,
-        GUILD_MEMBER_REMOVE = Member,
+        GUILD_MEMBER_UPDATE = Member,
+        GUILD_MEMBER_REMOVE = Specifics,
+
+        --// Ban
+        GUILD_BAN_ADD = Specifics,
+        GUILD_BAN_REMOVE = Specifics,
+
+        --// Channel
         CHANNEL_CREATE = Channel,
         CHANNEL_UPDATE = Channel,
-        CHANNEL_DELETE = Channel,
+        CHANNEL_DELETE = Specifics,
+
+        --// Thread
+        THREAD_CREATE = Channel,
+        THREAD_UPDATE = Channel,
+        THREAD_DELETE = Specifics,
+
+        --// Role
+        GUILD_ROLE_CREATE = Role,
+        GUILD_ROLE_UPDATE = Role,
+        GUILD_ROLE_DELETE = Specifics,
     }
 }
 
@@ -67,7 +92,7 @@ function Constants.defaultIdentify(token: string)
             status = 'online',
             afk = false
         },
-        intents = 33349
+        intents = 33351
     }
 end
 

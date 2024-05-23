@@ -9,6 +9,7 @@ export type Cache<asyncs> = {
     name: string,
     get: (key: any) -> asyncs,
     find: (key: any) -> boolean,
+    remove: (key: any) -> (),
     set: (key: any, value: any) -> (),
     protect: (key: any) -> ()
 }
@@ -59,6 +60,13 @@ return Lumi.component('Cache', function<model>(self, name: string, mode: mode?, 
     --- @within Cache
     function self.set(key: any, value: any)
         asyncs[key] = value
+    end
+
+    --- @within Cache
+    function self.remove(key: any)
+        if self.find(key) then
+            self.set(key, nil)
+        end
     end
 
     --- @within Cache

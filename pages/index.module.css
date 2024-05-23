@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 4.2rem 2rem 7rem;
+    padding: 4rem 2rem 8rem;
     background-color: #edf7fa;
     color: #333;
     text-align: center;
@@ -77,7 +77,6 @@
 }
 
 .features {
-    padding: 2rem;
     background-color: #2d3658;
     text-align: center;
     color: white;

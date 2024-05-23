@@ -15,10 +15,12 @@ code>a:hover {
     text-decoration: underline;
 }
 
-/* Navbar */
-
 .navbar__logo img {
     transition: opacity var(--ifm-transition-fast) var(--ifm-transition-timing-default), filter 0.3s ease-in-out;
+}
+
+.navbar--fixed-top {
+    background-color: #2d3658;
 }
 
 .navbar__logo img:hover {

@@ -15,7 +15,7 @@ title = ""
 [docusaurus]
 onBrokenLinks = "throw"
 onBrokenMarkdownLinks = "warn"
-favicon = "/static/favicon.svg"
+favicon = "favicon.svg"
 
 [navbar.logo]
 alt = "Lumi"
@@ -25,5 +25,4 @@ src = "/logo.svg"
 includeReadme = false
 
 [footer]
-style = "dark"
-copyright = "Copyright © 2024 Astrid. Built with Moonwave and Docusaurus"
+copyright = "Built using Docusaurus and Moonwave. Released under the <a href=\"https://github.com/astridyz/Lumi/blob/main/LICENSE\" target=\"_blank\">MIT License</a>."   

@@ -25,11 +25,11 @@ export type Member = {
 ]=]
 
 --// This
-return Lumi.container('Member', function(self, data, _, serializer): Member
+return Lumi.container('Member', function(self, data, client, serializer): Member
     --// Public
-    self.user = data.user and serializer.data(data.user, User) or nil
+    self.user = data.user and serializer.data(data.user, User)
     self.nick = data.nick
-    self.guild = data.guild_id and data.guild_id or nil
+    self.guild = data.guild_id and client.state.getGuild(data.guild_id)
 
     return self
 end)
