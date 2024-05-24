@@ -2,6 +2,7 @@
 --// Requires
 local Lumi = require '../Lumi'
 local Events = require '../Events'
+
 local task = require '@lune/task'
 
 local Rest = require 'API/Rest'
@@ -12,6 +13,7 @@ local State = require 'State'
 local Mutex = require 'Mutex'
 
 local User = require 'Serialized/User'
+local Message = require 'Serialized/Message'
 
 --// Types
 type Error = Rest.Error
@@ -21,6 +23,7 @@ type Event<args...> = Events.Event<args...>
 
 type State = State.State
 type User = User.User
+type Message = Message.Message
 
 type Identify = Shard.Identify
 
@@ -31,7 +34,7 @@ export type Session = {
     state: State,
     user: User,
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
-    sendMessage: (channelID: string, content: {[string]: any} | string) -> (string?),
+    sendMessage: (channelID: string, content: string | {[string]: any}, replyTo: string?) -> (string?),
 }
 
 --[=[
@@ -163,7 +166,7 @@ return Lumi.component('Session', function(self): Session
 
         @within Session
         @param content {} | string
-        @return (error: string?) 
+        @return (message: Message?, error: string?) 
 
         Sends a message in the given channel.  
         The content  table needs to be created using constructors available in Lumi.
@@ -175,20 +178,20 @@ return Lumi.component('Session', function(self): Session
     ]=]
     
 
-    function self.sendMessage(channelID: string, content: {[string]: any} | string): (string?)
-        assert(Token ~= nil, 'No token available, authenticate first.')
+    function self.sendMessage(channelID: string, content: string | Data, replyTo: string?): (string?)
+        local payload = type(content) == 'table' and content or {content = content} :: Data
 
-        if type(content) == 'table' then
-            local _, err = API.createMessage(channelID, content)
-            return err and err.message or nil
+        if replyTo then
+            payload.message_reference = {message_id = replyTo}
         end
 
-        if type(content) == 'string' then
-            local _, err = API.createMessage(channelID, {content = content})
-            return err and err.message or nil
+        local Data, error = API.createMessage(channelID, payload)
+
+        if not Data and error then
+            return nil, 'Could not send message: ' .. error.message
         end
 
-        return 'Invalid message content body'
+        return error and error.message
     end
 
     return self

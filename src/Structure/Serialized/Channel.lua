@@ -3,6 +3,8 @@
 local Lumi = require '../../Lumi'
 
 --// Types
+type Data = Lumi.Data
+
 export type Channel = {
     ID: string,
     type: string,
@@ -12,7 +14,8 @@ export type Channel = {
     nsfw: boolean,
     slowmode: number,
     parentID: number,
-    newlyCreated: boolean
+    newlyCreated: boolean,
+    sendMessage: (content: string | Data) -> (string?)
 }
 
 --[=[
@@ -28,11 +31,12 @@ export type Channel = {
     .slowmode number
     .parentID number
     .newlyCreated boolean
+    .sendMessage (content: string | {}) -> (error: string?)
 
 ]=]
 
 --//This
-return Lumi.container('Channel', function(self, data): Channel
+return Lumi.container('Channel', function(self, data, client): Channel
     --// Public
     self.ID = data.id
     self.guildID = data.guild_id
@@ -42,6 +46,11 @@ return Lumi.container('Channel', function(self, data): Channel
     self.slowmode = data.rate_limit_per_users
     self.parentID = data.parent_id
     self.newlyCreated = data.newly_created
+
+    --// Methods
+    function self.sendMessage(content: string | Data)
+        return client.sendMessage(self.ID, content)
+    end
 
     return self
 end)

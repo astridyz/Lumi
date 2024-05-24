@@ -27,7 +27,7 @@ Now, lets open a connection to Discord and make your bot go online. On your `mai
 --// Require Lumi
 local Lumi = require '../libs/Lumi'
 
---// Session is a factory function that returns our Session class.
+--// Session is a factory function that returns our Session component.
 local Session = Lumi.session()
 
 --// Authenticate your token in the Discord API

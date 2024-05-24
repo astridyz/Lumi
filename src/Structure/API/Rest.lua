@@ -1,8 +1,9 @@
 --!strict
 --// Requires
 local Lumi = require '../../Lumi'
-local net = require '@lune/net'
 local Constants = require '../../Constants'
+
+local net = require '@lune/net'
 
 local Mutex = require '../Mutex'
 
@@ -14,11 +15,12 @@ type Mutex = Mutex.Mutex
 
 export type API = {
     authenticate: (Token: string) -> (Data, Error),
+
     getCurrentUser: () -> (Data, Error),
     getGatewayBot: () -> (Data, Error),
     getGateway: () -> (Data, Error),
+
     createMessage: (channelID: string, payload: Data) -> (Data, Error),
-    getGuild: (guildID: string) -> (Data, Error)
 }
 
 export type Error = {
@@ -96,10 +98,6 @@ return Lumi.component('Rest', function(self): API
 
     function self.createMessage(channelID: string, payload: Data)
         return request('POST', '/channels/' .. channelID .. '/messages', payload)
-    end
-
-    function self.getGuild(guildID: string)
-        return request('GET', '/guilds/' .. guildID)
     end
 
     return self

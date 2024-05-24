@@ -1,6 +1,7 @@
 --!strict
 --// Requires
 local Lumi = require '../../Lumi'
+
 local Cache = require '../Cache'
 
 local Channel = require 'Channel'
@@ -46,23 +47,25 @@ return Lumi.container('Guild', function(self, data, client, serializer): Guild
     self.locale = data.preferred_locale
 
     self.channels = Cache('myChannel', 'k', Channel)
+    self.roles = Cache('myRole', 'k', Role)
 
     if data.channels then
         for _, channel in ipairs(data.channels) do
             channel = serializer.data(channel, Channel)
+
             self.channels.set(channel.ID, channel)
         end
     end
 
     for _, thread in ipairs(data.threads) do
         thread = serializer.data(thread, Channel)
+
         self.channels.set(thread.ID, thread)
     end
 
-    self.roles = Cache('myRole', 'k', Role)
-
     for _, role in ipairs(data.roles) do
         role = serializer.data(role, Role)
+
         self.roles.set(role.ID, role)
     end
 

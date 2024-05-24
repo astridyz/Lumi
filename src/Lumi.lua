@@ -3,7 +3,6 @@
 local Lumi = {}
 
 --// Functions
-
 function Lumi.component<Plugins, Args...>(name: string, wrapper: (self: Prototype & Plugins, Args...) -> Plugins): (Args...) -> Plugins
     return function(...: Args...)
         local meta = { __metatable = 'locked' }

@@ -43,6 +43,8 @@ Session.login('YOUR_BOT_TOKEN')
 --// Automatic type cast on "message"
 local function onMessageCreate(message)
     --// Printing the field content from the message
+    --// Note that you need the message_content intent to
+    --// have access to messages content (check the tip bellow)
     print(message.content)
 end
 
@@ -54,7 +56,9 @@ Session.connect()
 ```
 
 :::tip Messages content
-Tried and it printed a empty string? Your [MESSAGE_CONTENT privileged intent](https://discord.com/developers/docs/topics/gateway#privileged-intents) may be disabled.
+Tried and it printed a empty string? Your [MESSAGE_CONTENT privileged intent](https://discord.com/developers/docs/topics/gateway#privileged-intents) may be disabled.  
+But don't worry, you can enable it easily, [check this guide.](/docs/Guides/Intents)
+
 :::
 
 In the next page, you will be doing your first requests to Discord.

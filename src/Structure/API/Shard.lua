@@ -1,6 +1,13 @@
 --!strict
 --// Requires
 local Lumi = require '../../Lumi'
+local Constants = require '../../Constants'
+
+local urlPath = Constants.gatewayPath
+local Codes = Constants.gatewayCodes
+local closeCodes = Constants.closeCodes
+local closeErrors = Constants.closeErrors
+
 local net = require '@lune/net' 
 local task = require '@lune/task'
 
@@ -8,12 +15,6 @@ local Listen = require '../Listen'
 local Websocket = require 'Websocket'
 local Serializer = require '../Serializer'
 local Mutex = require '../Mutex'
-
-local Constants = require '../../Constants'
-local urlPath = Constants.gatewayPath
-local Codes = Constants.gatewayCodes
-local closeCodes = Constants.closeCodes
-local closeErrors = Constants.closeErrors
 
 --// Types
 type httpSocket = net.WebSocket
