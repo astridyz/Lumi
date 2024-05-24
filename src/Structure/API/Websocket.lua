@@ -12,6 +12,8 @@ local Listen = require '../Listen'
 local Mutex = require '../Mutex'
 
 --// Types
+type Data = Lumi.Data
+
 type Websocket = net.WebSocket
 type Listener = Listen.Listener
 type Mutex = Mutex.Mutex
@@ -39,7 +41,6 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
 
             if httpSocket.closeCode then
                 IS_SOCKET_ACTIVE = false
-                print(httpSocket.closeCode)
                 codeHandler.emit(7, httpSocket.closeCode)
                 return
             end

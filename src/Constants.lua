@@ -4,14 +4,13 @@ local Member = require 'Structure/Serialized/Member'
 local Channel = require 'Structure/Serialized/Channel'
 local Role = require 'Structure/Serialized/Role'
 local Specifics = require 'Structure/Serialized/Specifics'
--- local User = require 'Structure/Serialized/User'
 
 local Constants = {
     apiUrl = 'https:discord.com/api/v10',
 
     gatewayPath = '/?v=10&encoding=json/',
 
-    defaultDelay = 1, --// Default http delay in seconds
+    defaultDelay = 0.1, --// Default http delay in seconds
     defaultGatewayDelay = 0.5, --// Half second or 500 milliseconds
 
     gatewayCodes = {
@@ -27,6 +26,20 @@ local Constants = {
         hello = 10,
         heartbeatAck = 11
     },
+
+    gatewayDescription = {
+        [0] = 'dispatch',
+        [1] = 'heartbeat',
+        [2] = 'identify',
+        [3] = 'presence update',
+        [4] = 'voice state update',
+        [6] = 'resume',
+        [7] = 'reconnect',
+        [8] = 'request guild members',
+        [9] = 'invalid session',
+        [10] = 'hello',
+        [11] = 'heartbeat ack'
+    },
     
     closeCodes = {
         [4000] = true,  --// Unknown error
@@ -38,13 +51,29 @@ local Constants = {
         [4007] = true,  --// Invalid seq
         [4008] = true,  --// Rate limited
         [4009] = true,  --// Session timed out
-        [4010] = false, --// Invalid shard
-        [4011] = false, --// Sharding required
-        [4012] = false, --// Invalid API version
-        [4013] = false, --// Invalid intent(s)
-        [4014] = false, --// Disallowed intent(s)
+        [4010] = 'error', --// Invalid shard
+        [4011] = 'error', --// Sharding required
+        [4012] = 'error', --// Invalid API version
+        [4013] = 'error', --// Invalid intent(s)
+        [4014] = 'error', --// Disallowed intent(s)
         [1000] = true,  --// Reconnect opcode
         [1001] = true   --// Reconnect opcode
+    },
+
+    closeErrors = {
+        [4010] = 'Invalid shard',
+        [4011] = 'Sharding required',
+        [4012] = 'Invalid API version',
+        [4013] = 'Invalid intent(s)',
+        [4014] = 'Disallowed intent(s)',
+        [4000] = 'Unknown error',
+        [4001] = 'Unknown opcode',
+        [4002] = 'Decode error',
+        [4003] = 'Not authenticated',
+        [4005] = 'Already authenticated',
+        [4007] = 'Invalid seq',
+        [4008] = 'Rate limited',
+        [4009] = 'Session timed out'
     },
 
     payloads = {
@@ -83,9 +112,8 @@ local Constants = {
     }
 }
 
-function Constants.defaultIdentify(token: string)
+function Constants.identifyStructure()
     return {
-        token = token,
         properties = {
             os = '',
             browser = 'Lumi',
@@ -95,7 +123,7 @@ function Constants.defaultIdentify(token: string)
             status = 'online',
             afk = false
         },
-        intents = 33351
+        intents = 14023
     }
 end
 

@@ -22,8 +22,11 @@ type Event<args...> = Events.Event<args...>
 type State = State.State
 type User = User.User
 
+type Identify = Shard.Identify
+
 export type Session = {
     login: (token: string) -> (),
+    identify: Identify,
     connect: () -> string?,
     state: State,
     user: User,
@@ -64,6 +67,18 @@ return Lumi.component('Session', function(self): Session
     ]=]
 
     self.state = State
+
+    --[=[
+    
+        @within Session
+        @prop identify Identify
+
+        Some information useful for handshake with Discord.
+        Check docs for more information about this
+
+    ]=]
+
+    self.identify = {} :: Identify
 
     --// Methods
 
@@ -111,11 +126,11 @@ return Lumi.component('Session', function(self): Session
         local Data, err = API.getGatewayBot()
         assert(not err or Data == nil, 'Could not authenticate: ' .. tostring(err and err.message))
 
-        for shardID = 1, Data and Data.shards do
+        for shardID = 1, Data.shards do
             local shard = Shard(Token, EventHandler, Serializer, Mutex)
             Shards[shardID] = shard
 
-            coroutine.wrap(shard.socket)(shardID - 1, Data and Data.shards, Data and Data.url)
+            coroutine.wrap(shard.bind)(shardID - 1, Data.shards, Data.url, self.identify)
             task.wait(1)
         end
 

@@ -4,8 +4,8 @@ sidebar_position: 1
 
 # Lumi
 
-:::warning Still in development
-Lumi does not support rate limiting yet. I don't recommend you to use it for public bots.
+:::info Still in development
+Lumi is on its initial stages, breaking changes should be expected.
 :::
 
 Lumi is a library made for the Luau language.  

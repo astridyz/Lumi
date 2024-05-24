@@ -41,40 +41,37 @@ return Lumi.component('Rest', function(self): API
     local Headers
     local Mutexes = setmetatable({}, meta)
 
-    local function attempt(method: httpMethod, url: string, payload: Data?): (boolean, Data, number)
-        local delay = Constants.defaultDelay
-        
-        local success, response = pcall(function()
-            return net.request {
-                method = method,
-                headers = Headers,
-                url = url,
-                body = payload and net.jsonEncode(payload) or nil
-            }
-        end)
-    
-        if success and response.headers['x-ratelimit-remaining'] == '0' then
-            local resetAfter = tonumber(response.headers['x-ratelimit-reset-after'])
-            delay = resetAfter and math.max(resetAfter, delay) or delay
+        local function sendRequest(...)
+            local delay = Constants.defaultDelay
+            local success, response = pcall(net.request, ...)
+
+            if success and response.headers['x-ratelimit-remaining'] == '0' then
+                local resetAfter = tonumber(response.headers['x-ratelimit-reset-after'])
+                delay = resetAfter and math.max(resetAfter, delay) or delay
+            end
+
+            return success, response, delay
         end
-    
-        return success, response, delay
-    end
-    
-    local function request(method: httpMethod, endpoint: string, payload: Data?): (Data?, Error)
-        local URL = Constants.apiUrl .. endpoint
-        local mutex = Mutexes[endpoint] :: Mutex
-        
-        mutex.lock()
-        local success, response, delay = attempt(method, URL, payload)
-        mutex.unlockAfter(delay)
-    
-        if success and response.ok then
-            return net.jsonDecode(response.body), nil
-        else
-            return nil, net.jsonDecode(response.body)
+
+        local function request(method: httpMethod, endpoint: string, payload: Data?)
+            local url = Constants.apiUrl .. endpoint
+            local mutex = Mutexes[endpoint] :: Mutex
+
+            mutex.lock()
+            local success, response, delay = sendRequest({
+                method = method, headers = Headers, url = url, body = payload 
+                and net.jsonEncode(payload) or nil
+            })
+            mutex.unlockAfter(delay)
+
+            local body = net.jsonDecode(response.body)
+
+            if success and response.ok then
+                return body
+            else
+                return nil, body
+            end
         end
-    end
     
 
     --// Public
