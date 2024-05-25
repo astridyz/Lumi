@@ -123,13 +123,13 @@ function Constants.identifyStructure()
             status = 'online',
             afk = false
         },
-        intents = 14023
+        intents = 4613
     }
 end
 
 function Constants.defaultHeaders(token: string)
     return {
-        ['User-Agent'] = 'DiscordBot (https://github.com/astridyz/Luthe, 0.1.0)',
+        ['User-Agent'] = 'DiscordBot (https://github.com/astridyz/Lumi, 0.1.0)',
         ['Authorization'] = 'Bot ' .. token,
         ['Content-Type'] = 'application/json'
     }

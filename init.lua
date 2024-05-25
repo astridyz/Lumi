@@ -2,5 +2,6 @@ return {
     manager = require 'src/Lumi',
     session = require 'src/Structure/Session',
     constants = require 'src/Constants',
-    events = require 'src/Events'
+    events = require 'src/Events',
+    enums = require 'src/Enums'
 }

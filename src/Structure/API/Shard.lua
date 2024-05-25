@@ -27,7 +27,7 @@ type Payload = Serializer.Payload
 type Serializer = Serializer.Serializer
 
 export type Identify = {
-    intents: number,
+    intents: {number},
     presence: {
         status: string,
         afk: boolean
@@ -147,12 +147,18 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
         assert(typeof(Identify) == 'table', 'Identify structure needs to be a table.')
 
         local payload = Constants.identifyStructure()
-
         payload.shard = {ID, totalShards}
         payload.token = token
 
+        local intents = payload.intents
+        if Identify.intents then
+            for _, number in ipairs(Identify.intents) do
+                intents = intents + number
+            end
+        end
+
         payload.presence = Identify.presence or payload.presence
-        payload.intents = Identify.intents or payload.intents
+        payload.intents = intents
         
         Socket.send(2, payload)
     end

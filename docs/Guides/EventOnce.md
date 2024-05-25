@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Listening once to an event
+# Once events
 
 Given the following code we will be doing our additions:
 
@@ -38,7 +38,7 @@ local function onMessageCreate(message)
     Connection()
 end
 
---// Changing the variable value to the .listen() method
+--// Changing the variable value to the return of the .listen() method
 Connection = Session.listen(Events.messageCreate, onMessageCreate)
 
 Session.connect()
