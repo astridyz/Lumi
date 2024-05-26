@@ -14,6 +14,7 @@ local Mutex = require 'Mutex'
 
 local User = require 'Serialized/User'
 local Message = require 'Serialized/Message'
+local Application = require 'Serialized/Application'
 
 --// Types
 type Error = Rest.Error
@@ -24,6 +25,7 @@ type Event<args...> = Events.Event<args...>
 type State = State.State
 type User = User.User
 type Message = Message.Message
+type Application = Application.Application
 
 type Identify = Shard.Identify
 
@@ -31,10 +33,20 @@ export type Session = {
     login: (token: string) -> (),
     identify: Identify,
     connect: () -> string?,
+    
     state: State,
     user: User,
+    application: Application,
+
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
-    sendMessage: (channelID: string, content: string | {[string]: any}, replyTo: string?) -> (string?),
+
+    registerGlobalCommand: (commandData: Data) -> string?,
+    deleteGlobalCommand: (ID: string) -> string?,
+    registerGuildCommand: (guildID: string, data: Data) -> string?,
+
+    replyInteraction: (interactionID: string, interactionToken: string, content: Data) -> string?,
+
+    sendMessage: (channelID: string, content: string | Data, replyTo: string?) -> (string?),
 }
 
 --[=[
@@ -57,6 +69,13 @@ return Lumi.component('Session', function(self): Session
     local Mutex = Mutex()
 
     local Serializer = Serializer(self :: any, State)
+
+    local function getApplicationData(): Application
+        local botApp, err = API.getCurrentApplication()
+        assert(botApp or not err, 'Could not get application data')
+
+        return Serializer.data(botApp, Application)
+    end
 
     --// Public
 
@@ -96,16 +115,15 @@ return Lumi.component('Session', function(self): Session
 
     ]=]
 
-    function self.login(token: string)
+    function self.login(token: string): ()
         assert(token ~= nil, 'No Token have been sent.')
         Token = token
 
         local botUser, err = API.authenticate(Token)
-        assert(not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
+        assert(botUser or not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
 
-        if botUser then
-            self.user = Serializer.data(botUser, User)
-        end
+        self.user = Serializer.data(botUser, User)
+        self.application = getApplicationData()
     end
 
     --[=[
@@ -157,9 +175,55 @@ return Lumi.component('Session', function(self): Session
 
     ]=]
 
-    function self.listen<args...>(event: Event<args...>, callback: (args...) -> ())
+    function self.listen<args...>(event: Event<args...>, callback: (args...) -> ()): ()
         assert(Events[event.index], 'Invalid event type')
         return EventHandler.listen(event.name, callback)
+    end
+
+    --[=[
+
+        @within Session
+        @param data Command -- A command object created by Lumi builders.
+
+        Register a global application command in your BOT.
+
+    ]=]
+
+    function self.registerGlobalCommand(data: Data): string?
+        local command, err = API.createGlobalApplicationCommand(self.application.ID, data)
+        print(command, err)
+        return err and err.message
+    end
+
+        --[=[
+
+        @within Session
+        @param data Command -- A command object created by Lumi builders.
+
+        Register a guild only application command in your BOT.
+
+    ]=]
+
+    function self.registerGuildCommand(guildID: string, data: Data): string?
+        local _, err = API.createGuildApplicationCommand(self.application.ID, guildID, data)
+        return err and err.message
+    end
+
+    --- @within Session
+    function self.deleteGlobalCommand(ID: string): string?
+        local _, err = API.deleteGlobalApplicationCommand(self.application.ID, ID)
+
+        return err and err.message
+    end
+
+    function self.replyInteraction(interactionID: string, token: string, data: Data | string)
+        local payload = {}
+        payload.data = {content = data}
+        payload.type = 4
+
+        local _, err = API.createInteractionResponse(interactionID, token, payload)
+
+        return err and err.message
     end
 
     --[=[
@@ -178,8 +242,8 @@ return Lumi.component('Session', function(self): Session
     ]=]
     
 
-    function self.sendMessage(channelID: string, content: string | Data, replyTo: string?): (string?)
-        local payload = type(content) == 'table' and content or {content = content} :: Data
+    function self.sendMessage(channelID: string, data: string | Data, replyTo: string?): (string?)
+        local payload = type(data) == 'table' and {content = data.content} or {content = data} :: any
 
         if replyTo then
             payload.message_reference = {message_id = replyTo}

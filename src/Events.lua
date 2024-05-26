@@ -16,6 +16,9 @@ type Member = Member.Member
 local Role = require 'Structure/Serialized/Role'
 type Role = Role.Role
 
+local Command = require 'Structure/Serialized/Command'
+type ApplicationCommand = Command.ApplicationCommandResponse
+
 export type Event<args...> = {
     payload: (args...) -> (),
     index: string,
@@ -249,7 +252,7 @@ return {
         index = "integrationDelete"
     },
     interactionCreate = {
-        payload = {},
+        payload = function(Interaction: ApplicationCommand) end,
         name = "INTERACTION_CREATE",
         index = "interactionCreate"
     },

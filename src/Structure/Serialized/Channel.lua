@@ -15,7 +15,7 @@ export type Channel = {
     slowmode: number,
     parentID: number,
     newlyCreated: boolean,
-    sendMessage: (content: string | Data) -> (string?)
+    send: (content: string | Data) -> (string?)
 }
 
 --[=[
@@ -31,7 +31,7 @@ export type Channel = {
     .slowmode number
     .parentID number
     .newlyCreated boolean
-    .sendMessage (content: string | {}) -> (error: string?)
+    .send (content: string | {}) -> (error: string?)
 
 ]=]
 
@@ -49,7 +49,7 @@ return Lumi.container('Channel', function(self, data, client): Channel
 
     --// Methods
     function self.sendMessage(content: string | Data)
-        return client.sendMessage(self.ID, content)
+        return client.send(self.ID, content)
     end
 
     return self

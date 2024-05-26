@@ -15,7 +15,7 @@ type Data = Lumi.Data
 
 export type Serializer = {
     payload: (package: Payload) -> (string, {any}?),
-    data: (rawData: Data, factory: any) -> Data
+    data: (rawData: Data?, factory: any) -> Data
 }
 
 export type Payload = {
@@ -76,11 +76,12 @@ return Lumi.component('Serializer', function(self, client: any, state: State): S
 
     ]=]
 
-    function self.data(rawData, factory)
+    function self.data(rawData: Data?, factory)
         if not rawData then
             return nil
         end
-        local data = factory(rawData)
+        
+        local data = factory(rawData, client, self)
         state.addData(data)
 
         return table.freeze(data)
