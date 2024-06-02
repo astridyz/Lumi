@@ -6,7 +6,15 @@ changelog = true
 
 classOrder = [
     "Session",
-    "Containers"
+    "State",
+    "Guild",
+    "Role",
+    "Channel",
+    "Member",
+    "Message",
+    "User",
+    "Application",
+    "Command Response"
 ]
 
 [navbar]

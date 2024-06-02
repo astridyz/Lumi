@@ -23,37 +23,109 @@ export type Message = {
     everyone: boolean,
     channel: Channel,
     content: string,
-    reply: (content: any) -> (Message?, string?)
+    reply: (content: any) -> (string?)
 }
 
 --[=[
 
-    @within Containers
-    @interface Message
-    .author User
-    .member Member?
-    .guild Guild?
-    .ID string
-    .everyone boolean
-    .channel Channel
-    .content string
-    .reply (content: {} | string) -> (message: Message?, error: string?) -- Send a message in the current channel replying to the message returned by messageCreate event
+    @class Message
+
+    Represents a Discord message object.
 
 ]=]
 
 --// This
 return Lumi.container('Message', function(self, data, client, serializer): Message
     --// Public
+
+    --[=[
+
+        @within Message
+        @prop ID string
+
+        The unique identifier for the message.
+
+    ]=]
+
     self.ID = data.id
+
+    --[=[
+
+        @within Message
+        @prop everyone boolean
+
+        Indicates if the message mentions everyone.
+
+    ]=]
+
     self.everyone = data.mention_everyone
+
+    --[=[
+
+        @within Message
+        @prop content string
+
+        The content of the message.
+
+    ]=]
+
     self.content = data.content
 
-    self.channel =  client.state.getChannel(data.channel_id) or nil
+    --[=[
+
+        @within Message
+        @prop channel Channel
+
+        The channel where the message was sent.
+
+    ]=]
+
+    self.channel = client.state.getChannel(data.channel_id) or nil
+
+    --[=[
+
+        @within Message
+        @prop author User
+
+        The author of the message.
+
+    ]=]
+
     self.author = serializer.data(data.author, User)
+
+    --[=[
+
+        @within Message
+        @prop guild Guild
+
+        The guild where the message was sent.
+
+    ]=]
+
     self.guild = data.guild_id and client.state.getGuild(data.guild_id) or nil
+
+    --[=[
+
+        @within Message
+        @prop member Member
+
+        The member who sent the message.
+
+    ]=]
+
     self.member = serializer.data(data.member, Member) or nil
 
-    --// Methods
+    --[=[
+
+        @within Message
+        @param content string | {}
+
+        Sends a reply to the message. The content can be a string or a Data object.
+
+        @return (error: string?)
+
+    ]=]
+
     function self.reply(content: string | Data)
         return client.sendMessage(self.channel.ID, content, self.ID)
     end

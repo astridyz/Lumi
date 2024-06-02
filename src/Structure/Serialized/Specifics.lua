@@ -9,6 +9,7 @@ return Lumi.container('Specifics', function(self, data, client, serializer): any
 
     --//Public
     self.guild = data.guild_id and client.state.getGuild(data.guild_id)
+    self.user = data.user and serializer.data(data.user, User)
 
     --// Role delete case
     if data.role_id then
@@ -38,8 +39,6 @@ return Lumi.container('Specifics', function(self, data, client, serializer): any
 
         return self
     end
-
-    self.user = data.user and serializer.data(data.user, User)
 
     return self
 end)

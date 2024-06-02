@@ -41,6 +41,19 @@ export type Gateway = {
     handshake: () -> ()
 }
 
+--[=[
+
+    @class Gateway
+
+    Handles the WebSocket connection and communication with Discord's Gateway.
+
+    :::caution Sensitive
+    Data inside components are sensitive and could break Lumi if changed.  
+    Do not change or create components without reading the docs information.
+    :::
+
+]=]
+
 --// This
 return Lumi.component('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
     --// Private
@@ -122,6 +135,15 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
     end
 
     --// Public
+
+    --[=[
+
+        @within Gateway
+        
+        Initializes the WebSocket connection and starts handling events.
+
+    ]=]
+    
     function self.bind(shardID: number, totalShardCount: number, host: string, identify: Identify)
         urlHost = host
         ID = shardID
@@ -132,16 +154,43 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
         socket()
     end
 
+    --[=[
+
+        @within Gateway
+
+        Reconnects to the WebSocket by closing the current connection 
+        and opening a new one.
+
+    ]=]
+
     function self.reconnect()
         Socket.close()
         socket()
     end
+
+    --[=[
+
+        @within Gateway
+
+        Resumes the WebSocket connection by closing the current connection, 
+        opening a new one, and sending a resume payload.
+
+    ]=]
 
     function self.resume()
         Socket.close()
         socket()
         Socket.send(6, {token = token, session_id = session.ID, seq = eventSequence})
     end
+
+    --[=[
+
+        @within Gateway
+
+        Performs the initial handshake with the Discord Gateway 
+        by sending an identify payload.
+
+    ]=]
 
     function self.handshake()
         assert(typeof(Identify) == 'table', 'Identify structure needs to be a table.')
@@ -151,6 +200,7 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
         payload.token = token
 
         local intents = payload.intents
+        
         if Identify.intents then
             for _, number in ipairs(Identify.intents) do
                 intents = intents + number

@@ -25,7 +25,16 @@ export type State = {
     getGuild: (ID: string) -> Guild,
     getUser: (ID: string) -> User,
     getChannel: (ID: string) -> Channel,
+    getRole: (ID: string) -> Role,
 }
+
+--[=[
+
+    @class State
+
+    Main interface for managing state and caching data for Discord entities.
+
+]=]
 
 --// This
 return Lumi.component('State', function(self): State
@@ -39,6 +48,16 @@ return Lumi.component('State', function(self): State
     Asyncs.set('Role', Cache('Role', 'k', Role))
 
     --// Methods
+
+    --[=[
+
+        @within State
+        @param data Data -- The data object to be added to the cache.
+
+        Adds data to the appropriate cache based on its container type.
+
+    ]=]
+
     function self.addData(data: Data)
         local Cache = Asyncs.find(data.container)
 
@@ -49,6 +68,16 @@ return Lumi.component('State', function(self): State
         Asyncs.get(data.container).set(data.ID, data)
     end
 
+    --[=[
+
+        @within State
+        @param ID string -- The ID of the data to be removed.
+        @param container string -- The container type of the data.
+
+        Removes data from the appropriate cache based on its container type.
+
+    ]=]
+    
     function self.removeData(ID: string, container: string)
         if not Asyncs.find(container) then
             return
@@ -58,18 +87,23 @@ return Lumi.component('State', function(self): State
     end
 
     --// Getters
+
+    --- @within Session
     function self.getGuild(ID: string): Guild
         return Asyncs.get('Guild').get(ID)
     end
 
+    --- @within Session
     function self.getUser(ID: string): User
         return Asyncs.get('User').get(ID)
     end
 
+    --- @within Session
     function self.getChannel(ID: string): Channel
         return Asyncs.get('Channel').get(ID)
     end
 
+    --- @within Session
     function self.getRole(ID: string): Role
         return Asyncs.get('Role').get(ID)
     end

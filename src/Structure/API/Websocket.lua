@@ -24,6 +24,20 @@ export type Socket = {
     close: () -> ()
 }
 
+--[=[
+
+    @class Websocket
+
+    Manages the WebSocket connection to Discord's Gateway, handling the sending 
+    and receiving of messages.
+
+    :::caution Sensitive
+    Data inside components are sensitive and could break Lumi if changed.  
+    Do not change or create components without reading the docs information.
+    :::
+
+]=]
+
 --// This
 return Lumi.component('Websocket', function(self, host: string, path: string, codeHandler: Listener, mutex: Mutex): Socket
     --// Private
@@ -38,7 +52,6 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
 
     local function process()
         while IS_SOCKET_ACTIVE and task.wait() do
-
             if httpSocket.closeCode then
                 IS_SOCKET_ACTIVE = false
                 codeHandler.emit(7, httpSocket.closeCode)
@@ -58,6 +71,17 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
     end
 
     --// Public
+
+    --[=[
+
+        @within Websocket
+        @param opcode number -- The opcode of the message.
+        @param data any -- The payload of the message.
+
+        Sends a message through the WebSocket.
+
+    ]=]
+
     function self.send(opcode: number, data: any)
         assert(httpSocket, 'Attempt to send payload without a valid socket')
         
@@ -65,6 +89,14 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
         httpSocket.send(net.jsonEncode {op = opcode, d = data})
         mutex.unlockAfter(gatewayDelay)
     end
+
+    --[=[
+
+        @within Websocket
+
+        Opens the WebSocket connection and starts processing incoming messages.
+
+    ]=]
 
     function self.open()
         assert(not IS_SOCKET_ACTIVE, 'Attempt to open the same socket two times')
@@ -77,6 +109,14 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
         Processing = task.spawn(process)
     end
 
+    --[=[
+
+        @within Websocket
+
+        Closes the WebSocket connection.
+
+    ]=]
+    
     function self.close()
         if not IS_SOCKET_ACTIVE then
             return

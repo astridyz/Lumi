@@ -46,7 +46,7 @@ export type Session = {
 
     replyInteraction: (interactionID: string, interactionToken: string, content: Data) -> string?,
 
-    sendMessage: (channelID: string, content: string | Data, replyTo: string?) -> (string?),
+    sendMessage: (channelID: string, content: string | Data, replyTo: string?) -> string?,
 }
 
 --[=[
@@ -84,7 +84,7 @@ return Lumi.component('Session', function(self): Session
         @within Session
         @prop state State
 
-        The currently state for all data in session.
+        The current state for all data in session.
 
     ]=]
 
@@ -95,8 +95,8 @@ return Lumi.component('Session', function(self): Session
         @within Session
         @prop identify Identify
 
-        Some information useful for handshake with Discord.
-        Check docs for more information about this
+        Information useful for handshake with Discord.
+        Check docs for more information about this.
 
     ]=]
 
@@ -109,14 +109,14 @@ return Lumi.component('Session', function(self): Session
         @within Session
         @param token string -- Your application token
 
-        Authenticates your token in Discord API, 
-        trying to call `Session.connect()` without a valid token 
+        Authenticates your token in Discord API. 
+        Trying to call `Session.connect()` without a valid token 
         will throw an error.
 
     ]=]
 
     function self.login(token: string): ()
-        assert(token ~= nil, 'No Token have been sent.')
+        assert(token ~= nil, 'No token has been sent.')
         Token = token
 
         local botUser, err = API.authenticate(Token)
@@ -130,7 +130,7 @@ return Lumi.component('Session', function(self): Session
 
         @within Session
         
-        Connects in Discord Gateway, opening the websocket connection.  
+        Connects to Discord Gateway, opening the websocket connection.  
         After calling it, your bot should go online and receive all Discord events.
 
         :::info Topologically-aware
@@ -161,7 +161,7 @@ return Lumi.component('Session', function(self): Session
     --[=[
 
         @within Session
-        @param event {} -- A event object. All events are listed in `Events.lua` file.
+        @param event {} -- An event object. All events are listed in `Events.lua` file.
 
         Listen to a given `Event` and calls a callback when it is emitted.
         
@@ -195,12 +195,13 @@ return Lumi.component('Session', function(self): Session
         return err and err.message
     end
 
-        --[=[
+    --[=[
 
         @within Session
+        @param guildID string -- The ID of the guild.
         @param data Command -- A command object created by Lumi builders.
 
-        Register a guild only application command in your BOT.
+        Register a guild-only application command in your BOT.
 
     ]=]
 
@@ -209,12 +210,31 @@ return Lumi.component('Session', function(self): Session
         return err and err.message
     end
 
-    --- @within Session
+    --[=[
+
+        @within Session
+        @param ID string -- The ID of the command to be deleted.
+
+        Delete a global application command in your BOT.
+
+    ]=]
+
     function self.deleteGlobalCommand(ID: string): string?
         local _, err = API.deleteGlobalApplicationCommand(self.application.ID, ID)
 
         return err and err.message
     end
+
+    --[=[
+
+        @within Session
+        @param interactionID string -- The ID of the interaction.
+        @param token string -- The interaction token.
+        @param data Data | string -- The response data or message.
+
+        Send a response to an interaction.
+
+    ]=]
 
     function self.replyInteraction(interactionID: string, token: string, data: Data | string)
         local payload = {}
@@ -229,18 +249,20 @@ return Lumi.component('Session', function(self): Session
     --[=[
 
         @within Session
-        @param content {} | string
-        @return (message: Message?, error: string?) 
+        @param channelID string -- The ID of the channel.
+        @param data string | {} -- The message content.
+        @param replyTo string? -- The ID of the message to reply to.
 
         Sends a message in the given channel.  
-        The content  table needs to be created using constructors available in Lumi.
+        The content table needs to be created using builders available in Lumi.
+
+        @return (error: string?) 
 
         :::info Topologically-aware
         This function is only usable if called within the context of Session.login 
         :::
 
     ]=]
-    
 
     function self.sendMessage(channelID: string, data: string | Data, replyTo: string?): (string?)
         local payload = type(data) == 'table' and {content = data.content} or {content = data} :: any
