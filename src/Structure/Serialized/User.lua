@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 --// Types
 export type User = {
@@ -21,7 +21,7 @@ export type User = {
 ]=]
 
 --// This
-return Lumi.container('User', function(self, data): User
+return Component.wrap('User', function(self, data): User
     --//Public
 
     --[=[
@@ -94,5 +94,5 @@ return Lumi.container('User', function(self, data): User
         return string.format('<@%s>', self.ID)
     end
 
-    return self
+    return self.query()
 end)

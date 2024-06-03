@@ -1,8 +1,8 @@
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 --// Types
-type Data = Lumi.Data
+type Data = Component.Data
 
 export type Application = {
     ID: string,
@@ -20,7 +20,7 @@ export type Application = {
 ]=]
 
 --// This
-return Lumi.container('Application', function(self, data): Application
+return Component.wrap('Application', function(self, data): Application
 
     --[=[
 
@@ -66,5 +66,5 @@ return Lumi.container('Application', function(self, data): Application
     
     self.isPublic = data.bot_public
 
-    return self
+    return self.query()
 end)

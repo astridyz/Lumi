@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 local Constants = require '../Constants'
 
 local Cache = require 'Cache'
@@ -11,11 +11,11 @@ type Cache<asyncs> = Cache.Cache<asyncs>
 
 type State = State.State
 
-type Data = Lumi.Data
+type Data = Component.Data
 
 export type Serializer = {
     payload: (package: Payload) -> (string, {any}?),
-    data: (rawData: Data?, factory: any) -> Data
+    data: <Model>(rawData: Data?, factory: (...any) -> Model) -> Model
 }
 
 export type Payload = {
@@ -43,7 +43,7 @@ export type Payload = {
 ]=]
 
 --// This
-return Lumi.component('Serializer', function(self, client: any, state: State): Serializer
+return Component.wrap('Serializer', function(self, client: any, state: State): Serializer
     --// Methods
 
     --[=[
@@ -64,7 +64,7 @@ return Lumi.component('Serializer', function(self, client: any, state: State): S
         local data = container(package.d, client, self)
         state.addData(data)
     
-        return package.t, table.freeze(data)
+        return package.t, data
     end
 
     --[=[
@@ -76,7 +76,7 @@ return Lumi.component('Serializer', function(self, client: any, state: State): S
 
     ]=]
 
-    function self.data(rawData: Data?, factory)
+    function self.data<Model>(rawData: Data?, factory: (...any) -> Model)
         if not rawData then
             return nil
         end
@@ -84,8 +84,8 @@ return Lumi.component('Serializer', function(self, client: any, state: State): S
         local data = factory(rawData, client, self)
         state.addData(data)
 
-        return table.freeze(data)
+        return data
     end
 
-    return self
+    return self.query()
 end)

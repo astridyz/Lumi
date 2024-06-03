@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 local User = require 'User'
 local Member = require 'Member'
@@ -8,7 +8,7 @@ local Guild = require 'Guild'
 local Channel = require 'Channel'
 
 --// Types
-type Data = Lumi.Data
+type Data = Component.Data
 
 type User = User.User
 type Member = Member.Member
@@ -16,14 +16,14 @@ type Guild = Guild.Guild
 type Channel = Channel.Channel
 
 export type Message = {
-    author: User,
-    member: Member,
-    guild: Guild,
+    author: User?,
+    member: Member?,
+    guild: Guild?,
     ID: string,
     everyone: boolean,
     channel: Channel,
     content: string,
-    reply: (content: any) -> (string?)
+    reply: (content: any) -> string?
 }
 
 --[=[
@@ -35,7 +35,7 @@ export type Message = {
 ]=]
 
 --// This
-return Lumi.container('Message', function(self, data, client, serializer): Message
+return Component.wrap('Message', function(self, data, client, serializer): Message
     --// Public
 
     --[=[
@@ -80,7 +80,7 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
 
     ]=]
 
-    self.channel = client.state.getChannel(data.channel_id) or nil
+    self.channel = client.state.getChannel(data.channel_id)
 
     --[=[
 
@@ -96,7 +96,7 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
     --[=[
 
         @within Message
-        @prop guild Guild
+        @prop guild Guild?
 
         The guild where the message was sent.
 
@@ -107,13 +107,13 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
     --[=[
 
         @within Message
-        @prop member Member
+        @prop member Member?
 
         The member who sent the message.
 
     ]=]
 
-    self.member = serializer.data(data.member, Member) or nil
+    self.member = serializer.data(data.member, Member :: any) or nil
 
     --[=[
 
@@ -130,5 +130,5 @@ return Lumi.container('Message', function(self, data, client, serializer): Messa
         return client.sendMessage(self.channel.ID, content, self.ID)
     end
 
-    return self
+    return self.query()
 end)

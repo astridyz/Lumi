@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 local Constants = require '../../Constants'
 
 local gatewayDelay = Constants.defaultGatewayDelay
@@ -12,7 +12,7 @@ local Listen = require '../Listen'
 local Mutex = require '../Mutex'
 
 --// Types
-type Data = Lumi.Data
+type Data = Component.Data
 
 type Websocket = net.WebSocket
 type Listener = Listen.Listener
@@ -39,7 +39,7 @@ export type Socket = {
 ]=]
 
 --// This
-return Lumi.component('Websocket', function(self, host: string, path: string, codeHandler: Listener, mutex: Mutex): Socket
+return Component.wrap('Websocket', function(self, host: string, path: string, codeHandler: Listener, mutex: Mutex): Socket
     --// Private
     local httpSocket
     local IS_SOCKET_ACTIVE
@@ -127,5 +127,5 @@ return Lumi.component('Websocket', function(self, host: string, path: string, co
         httpSocket.close(1000)
     end
 
-    return self
+    return self.query()
 end)

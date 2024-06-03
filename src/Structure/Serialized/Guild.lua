@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 local Cache = require '../Cache'
 
@@ -31,7 +31,7 @@ export type Guild = {
 ]=]
 
 --// This
-return Lumi.container('Guild', function(self, data, client, serializer): Guild
+return Component.wrap('Guild', function(self, data, client, serializer): Guild
     --// Public
 
     --[=[
@@ -125,9 +125,9 @@ return Lumi.container('Guild', function(self, data, client, serializer): Guild
     end
 
     for _, role in ipairs(data.roles) do
-        role = serializer.data(role, Role)
+        role = serializer.data(role, Role :: any)
         self.roles.set(role.ID, role)
     end
 
-    return self
+    return self.query()
 end)

@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 local User = require 'User'
 local Guild = require 'Guild'
 
@@ -23,7 +23,7 @@ export type Member = {
 ]=]
 
 --// This
-return Lumi.container('Member', function(self, data, client, serializer): Member
+return Component.wrap('Member', function(self, data, client, serializer): Member
     --// Public
 
     --[=[
@@ -35,7 +35,7 @@ return Lumi.container('Member', function(self, data, client, serializer): Member
 
     ]=]
 
-    self.user = data.user and serializer.data(data.user, User)
+    self.user = data.user and serializer.data(data.user, User) or nil
 
     --[=[
 
@@ -57,7 +57,7 @@ return Lumi.container('Member', function(self, data, client, serializer): Member
 
     ]=]
 
-    self.guild = data.guild_id and client.state.getGuild(data.guild_id)
+    self.guild = data.guild_id and client.state.getGuild(data.guild_id) or nil
 
-    return self
+    return self.query()
 end)

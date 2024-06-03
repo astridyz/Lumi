@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 local Constants = require '../../Constants'
 
 local net = require '@lune/net'
@@ -9,7 +9,7 @@ local Mutex = require '../Mutex'
 
 --// Types
 type httpMethod = net.HttpMethod
-type Data = Lumi.Data
+type Data = Component.Data
 
 type Mutex = Mutex.Mutex
 
@@ -38,7 +38,7 @@ export type Error = {
 }?
 
 --// This
-return Lumi.component('Rest', function(self): API
+return Component.wrap('Rest', function(self): API
     --// Mutex ratelimiting
     local meta = {}
     meta.__mode = 'v'
@@ -83,9 +83,9 @@ return Lumi.component('Rest', function(self): API
 
             if success and response.ok then
                 return body
-            else
-                return nil, body
             end
+
+            return nil, body
         end
     
 
@@ -140,5 +140,5 @@ return Lumi.component('Rest', function(self): API
         return request('POST', '/channels/' .. channelID .. '/messages', payload)
     end
 
-    return self
+    return self.query()
 end)

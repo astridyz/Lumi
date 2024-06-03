@@ -1,18 +1,21 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 
 --// Types
 type mode = ('k' | 'v' | 'kv')
 
-export type Cache<asyncs> = {
+export type Cache<model> = {
     name: string,
-    get: (key: any) -> asyncs,
+    iter: () -> Asyncs,
+    get: (key: any) -> model,
     find: (key: any) -> boolean,
     remove: (key: any) -> (),
     set: (key: any, value: any) -> (),
     protect: (key: any) -> ()
 }
+
+export type Asyncs = typeof(setmetatable({} :: { [any]: any }, {} :: { __mode: mode? }))
 
 --[=[
 
@@ -31,7 +34,7 @@ export type Cache<asyncs> = {
 ]=]
 
 --// This
-return Lumi.component('Cache', function<model>(self, name: string, mode: mode?, factory: (...any) -> model | {model}): Cache<model>
+return Component.wrap('Cache', function<model>(self, name: string, mode: mode?, factory: (...any) -> model): Cache<model>
     --// Private
     local asyncs = setmetatable({}, {__mode = mode})
     local protected = {}
@@ -47,8 +50,22 @@ return Lumi.component('Cache', function<model>(self, name: string, mode: mode?, 
 
     self.name = name
 
+    --[=[
+        
+        @within Cache
+
+        To iterate under all asyncs in a for loop.
+
+        @return {model}
+
+    ]=]
+
+    function self.iter()
+        return asyncs
+    end
+
     --- @within Cache
-    function self.get(key: any): model?
+    function self.get(key: any): model
         return asyncs[key] or protected[key] or nil
     end
 
@@ -76,5 +93,5 @@ return Lumi.component('Cache', function<model>(self, name: string, mode: mode?, 
         asyncs[key] = nil
     end
 
-    return self
+    return self.query()
 end)

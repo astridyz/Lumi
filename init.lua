@@ -1,5 +1,5 @@
 return {
-    manager = require 'src/Lumi',
+    component = require 'src/Component',
     session = require 'src/Structure/Session',
     constants = require 'src/Constants',
     events = require 'src/Events',

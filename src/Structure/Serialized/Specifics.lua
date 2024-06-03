@@ -1,11 +1,10 @@
---!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 local User = require 'User'
 
 --// This
-return Lumi.container('Specifics', function(self, data, client, serializer): any
+return Component.wrap('Specifics', function(self, data, client, serializer): any
 
     --//Public
     self.guild = data.guild_id and client.state.getGuild(data.guild_id)
@@ -40,5 +39,5 @@ return Lumi.container('Specifics', function(self, data, client, serializer): any
         return self
     end
 
-    return self
+    return self.query()
 end)

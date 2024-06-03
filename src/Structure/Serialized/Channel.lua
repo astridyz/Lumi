@@ -1,15 +1,15 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 --// Types
-type Data = Lumi.Data
+type Data = Component.Data
 
 export type Channel = {
     ID: string,
     type: string,
     name: string,
-    guildID: string,
+    guildID: string?,
     topic: string,
     nsfw: boolean,
     slowmode: number,
@@ -27,7 +27,7 @@ export type Channel = {
 ]=]
 
 --// This
-return Lumi.container('Channel', function(self, data, client): Channel
+return Component.wrap('Channel', function(self, data, client): Channel
     --// Public
 
     --[=[
@@ -66,7 +66,7 @@ return Lumi.container('Channel', function(self, data, client): Channel
     --[=[
 
         @within Channel
-        @prop guildID string
+        @prop guildID string?
 
         The unique identifier for the guild (server) this channel belongs to.
 
@@ -75,8 +75,10 @@ return Lumi.container('Channel', function(self, data, client): Channel
     self.guildID = data.guild_id
 
     --// Adding this channel to the guild cache it belongs to.
-    local Guild = client.state.getGuild(self.guildID)
-    Guild.roles.set(self.ID, self)
+    if self.guildID then
+        local Guild = client.state.getGuild(self.guildID)
+        Guild.roles.set(self.ID, self)
+    end
 
     --[=[
 
@@ -148,5 +150,5 @@ return Lumi.container('Channel', function(self, data, client): Channel
         return client.send(self.ID, content)
     end
 
-    return self
+    return self.query()
 end)

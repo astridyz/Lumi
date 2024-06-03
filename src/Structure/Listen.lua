@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 
 --// Types
 export type Listener = {
@@ -42,7 +42,7 @@ export type Listener = {
 ]=]
 
 --// This
-return Lumi.component('Listener', function(self): Listener
+return Component.wrap('Listener', function(self): Listener
 
     --// Private
     local Listening = {}
@@ -92,5 +92,5 @@ return Lumi.component('Listener', function(self): Listener
         end
     end
 
-    return self
+    return self.query()
 end)

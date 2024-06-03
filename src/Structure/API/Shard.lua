@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 local Constants = require '../../Constants'
 
 local urlPath = Constants.gatewayPath
@@ -12,7 +12,7 @@ local net = require '@lune/net'
 local task = require '@lune/task'
 
 local Listen = require '../Listen'
-local Websocket = require 'Websocket'
+local Websocket = require 'Socket'
 local Serializer = require '../Serializer'
 local Mutex = require '../Mutex'
 
@@ -35,7 +35,7 @@ export type Identify = {
 }
 
 export type Gateway = {
-    bind: (shardID: number, totalShard: number, host: string) -> (),
+    bind: (shardID: number, totalShard: number, host: string, identify: Identify) -> (),
     reconnect: () -> (),
     resume: () -> (),
     handshake: () -> ()
@@ -55,7 +55,7 @@ export type Gateway = {
 ]=]
 
 --// This
-return Lumi.component('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
+return Component.wrap('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
     --// Private
     local heartbeatInterval
     local session = {}
@@ -213,5 +213,5 @@ return Lumi.component('Gateway', function(self, token: string, EventHandler: Lis
         Socket.send(2, payload)
     end
 
-    return self
+    return self.query()
 end)

@@ -1,5 +1,5 @@
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 local Guild = require 'Guild'
 local User = require 'User'
@@ -7,7 +7,7 @@ local Member = require 'Member'
 local Channel = require 'Channel'
 
 --// Types
-type Data = Lumi.Data
+type Data = Component.Data
 
 type Guild = Guild.Guild
 type User = User.User
@@ -33,7 +33,7 @@ export type Response = {
 ]=]
 
 --// This
-return Lumi.container('Response', function(self, data, client, serializer): Response
+return Component.wrap('Response', function(self, data, client, serializer): Response
     --// Public
 
     --[=[
@@ -117,5 +117,5 @@ return Lumi.container('Response', function(self, data, client, serializer): Resp
         return client.replyInteraction(self.ID, self.token, payload)
     end
 
-    return self
+    return self.query()
 end)

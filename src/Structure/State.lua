@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 
 local Cache = require 'Cache'
 
@@ -12,7 +12,7 @@ local Role = require 'Serialized/Role'
 --// Types
 type Cache<asyncs> = Cache.Cache<asyncs>
 
-type Data = Lumi.Data
+type Data = Component.Data
 
 type Guild = Guild.Guild
 type User = User.User
@@ -20,7 +20,7 @@ type Channel = Channel.Channel
 type Role = Role.Role
 
 export type State = {
-    addData: (data: Data) -> (),
+    addData: (data: any) -> (),
     removeData: (ID: string, container: string) -> (),
     getGuild: (ID: string) -> Guild,
     getUser: (ID: string) -> User,
@@ -37,7 +37,7 @@ export type State = {
 ]=]
 
 --// This
-return Lumi.component('State', function(self): State
+return Component.wrap('State', function(self): State
     --// Private
     local Asyncs = Cache('State', 'k', Cache)
 
@@ -58,14 +58,14 @@ return Lumi.component('State', function(self): State
 
     ]=]
 
-    function self.addData(data: Data)
-        local Cache = Asyncs.find(data.container)
+    function self.addData(data: any)
+        local Cache = Asyncs.find(data.prototype)
 
         if not Cache then
             return
         end
 
-        Asyncs.get(data.container).set(data.ID, data)
+        Asyncs.get(data.prototype).set(data.ID, data)
     end
 
     --[=[
@@ -108,5 +108,5 @@ return Lumi.component('State', function(self): State
         return Asyncs.get('Role').get(ID)
     end
 
-    return self
+    return self.query()
 end)

@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../../Lumi'
+local Component = require '../../Component'
 
 --// Types
 export type Role = {
@@ -21,8 +21,15 @@ export type Role = {
 ]=]
 
 --// This
-return Lumi.container('Role', function(self, data, client, _): Role
+return Component.wrap('Role', function(self, data, client, _): Role
     --// Public
+
+    if data.role then
+        data = data.role
+        
+        local Guild = client.state.getGuild(data.guild_id)
+        Guild.roles.set(data.id, self)
+    end
 
     --[=[
         
@@ -33,14 +40,7 @@ return Lumi.container('Role', function(self, data, client, _): Role
 
     ]=]
 
-    if data.role then
-        self.guildID = data.guild_id
-
-        data = data.role
-        
-        local Guild = client.state.getGuild(self.guildID)
-        Guild.roles.set(data.id, self)
-    end
+    self.guildID = data.guild_id
 
     --[=[
 
@@ -97,5 +97,5 @@ return Lumi.container('Role', function(self, data, client, _): Role
 
     self.mentionable = data.mentionable
 
-    return self
+    return self.query()
 end)

@@ -4,7 +4,7 @@ local Member = require 'Structure/Serialized/Member'
 local Channel = require 'Structure/Serialized/Channel'
 local Role = require 'Structure/Serialized/Role'
 local Specifics = require 'Structure/Serialized/Specifics'
-local Command = require 'Structure/Serialized/Command'
+local Command = require 'Structure/Serialized/Response'
 
 local Constants = {
     apiUrl = 'https:discord.com/api/v10',

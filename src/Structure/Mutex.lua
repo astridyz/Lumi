@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 local task = require '@lune/task'
 
 --// Types
@@ -11,7 +11,7 @@ export type Mutex = {
 }
 
 --// This
-return Lumi.component('Mutex', function(self): Mutex
+return Component.wrap('Mutex', function(self): Mutex
     --// Private
     local Queue = {}
     local Active = false
@@ -50,5 +50,5 @@ return Lumi.component('Mutex', function(self): Mutex
     end
 
 
-    return self
+    return self.query()
 end)

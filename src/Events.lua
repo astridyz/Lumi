@@ -16,8 +16,8 @@ type Member = Member.Member
 local Role = require 'Structure/Serialized/Role'
 type Role = Role.Role
 
-local Command = require 'Structure/Serialized/Command'
-type ApplicationCommand = Command.ApplicationCommandResponse
+local Command = require 'Structure/Serialized/Response'
+type ApplicationCommand = Command.Response
 
 export type Event<args...> = {
     payload: (args...) -> (),

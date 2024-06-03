@@ -1,6 +1,6 @@
 --!strict
 --// Requires
-local Lumi = require '../Lumi'
+local Component = require '../Component'
 local Events = require '../Events'
 
 local task = require '@lune/task'
@@ -19,7 +19,7 @@ local Application = require 'Serialized/Application'
 --// Types
 type Error = Rest.Error
 
-type Data = Lumi.Data
+type Data = Component.Data
 type Event<args...> = Events.Event<args...>
 
 type State = State.State
@@ -58,7 +58,7 @@ export type Session = {
 ]=]
 
 --// This
-return Lumi.component('Session', function(self): Session
+return Component.wrap('Session', function(self): Session
     --// Private
     local Token;
     local Shards = {}
@@ -78,6 +78,28 @@ return Lumi.component('Session', function(self): Session
     end
 
     --// Public
+
+    --[=[
+
+        @within Session
+        @prop user User
+
+        The current bot user model.
+
+    ]=]
+
+    self.user = {} :: User
+
+    --[=[
+
+        @within Session
+        @prop application Application
+
+        The current bot application model.
+
+    ]=]
+
+    self.application = {} :: Application
 
     --[=[
 
