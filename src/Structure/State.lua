@@ -88,22 +88,22 @@ return Component.wrap('State', function(self): State
 
     --// Getters
 
-    --- @within Session
+    --- @within State
     function self.getGuild(ID: string): Guild
         return Asyncs.get('Guild').get(ID)
     end
 
-    --- @within Session
+    --- @within State
     function self.getUser(ID: string): User
         return Asyncs.get('User').get(ID)
     end
 
-    --- @within Session
+    --- @within State
     function self.getChannel(ID: string): Channel
         return Asyncs.get('Channel').get(ID)
     end
 
-    --- @within Session
+    --- @within State
     function self.getRole(ID: string): Role
         return Asyncs.get('Role').get(ID)
     end

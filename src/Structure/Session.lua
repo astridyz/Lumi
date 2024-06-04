@@ -40,8 +40,13 @@ export type Session = {
 
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
 
+    getGuildCommands: (guildID: string) -> (Data?, Error),
+    getGlobalCommands: () -> (Data?, Error),
+
     registerGlobalCommand: (commandData: Data) -> string?,
     deleteGlobalCommand: (ID: string) -> string?,
+
+    deleteGuildCommand: (guildID: string, ID: string) -> string?,
     registerGuildCommand: (guildID: string, data: Data) -> string?,
 
     replyInteraction: (interactionID: string, interactionToken: string, content: Data) -> string?,
@@ -54,6 +59,10 @@ export type Session = {
     @class Session
 
     Main interface for interacting with Discord.
+
+    :::info TOPOLOGICALLY-AWARE
+    The session functions are only usable if called within the context of Session.login()
+    :::
 
 ]=]
 
@@ -142,7 +151,7 @@ return Component.wrap('Session', function(self): Session
         Token = token
 
         local botUser, err = API.authenticate(Token)
-        assert(botUser or not err, 'Authentication failed: ' .. (err and err.message or 'unknown'))
+        assert(err == nil, 'Authentication failed: ' .. (err and err.message or 'unknown'))
 
         self.user = Serializer.data(botUser, User)
         self.application = getApplicationData()
@@ -155,10 +164,6 @@ return Component.wrap('Session', function(self): Session
         Connects to Discord Gateway, opening the websocket connection.  
         After calling it, your bot should go online and receive all Discord events.
 
-        :::info Topologically-aware
-        This function is only usable if called within the context of Session.login 
-        :::
-
         @return (error: string?)
 
     ]=]
@@ -167,7 +172,7 @@ return Component.wrap('Session', function(self): Session
         assert(Token ~= nil, 'No token available, authenticate first.')
 
         local Data, err = API.getGatewayBot()
-        assert(not err or Data == nil, 'Could not authenticate: ' .. tostring(err and err.message))
+        assert(Data ~= nil, 'Could not authenticate: ' .. tostring(err and err.message))
 
         for shardID = 1, Data.shards do
             local shard = Shard(Token, EventHandler, Serializer, Mutex)
@@ -205,30 +210,31 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param data Command -- A command object created by Lumi builders.
 
-        Register a global application command in your BOT.
+        Return a table with all the global current commands your bot has.
+
+        @return (data: {Command}?, error: string?)
 
     ]=]
 
-    function self.registerGlobalCommand(data: Data): string?
-        local command, err = API.createGlobalApplicationCommand(self.application.ID, data)
-        print(command, err)
-        return err and err.message
+    function self.getGlobalCommands()
+        local data, err = API.getAllGlobalApplicationCommands()
+        return data, err
     end
 
     --[=[
 
         @within Session
-        @param guildID string -- The ID of the guild.
         @param data Command -- A command object created by Lumi builders.
 
-        Register a guild-only application command in your BOT.
+        Register a global application command in your BOT.
+
+        @return (error: string?)
 
     ]=]
 
-    function self.registerGuildCommand(guildID: string, data: Data): string?
-        local _, err = API.createGuildApplicationCommand(self.application.ID, guildID, data)
+    function self.registerGlobalCommand(data: Data): string?
+        local _, err = API.createGlobalApplicationCommand(data)
         return err and err.message
     end
 
@@ -239,22 +245,75 @@ return Component.wrap('Session', function(self): Session
 
         Delete a global application command in your BOT.
 
+        @return (error: string?)
+
     ]=]
 
     function self.deleteGlobalCommand(ID: string): string?
-        local _, err = API.deleteGlobalApplicationCommand(self.application.ID, ID)
-
+        local _, err = API.deleteGlobalApplicationCommand(ID)
         return err and err.message
     end
 
     --[=[
 
         @within Session
-        @param interactionID string -- The ID of the interaction.
+
+        Returns a table of commands registred in the defined guild.
+
+        @return (data: {Command}?, error: string?)
+
+    ]=]
+
+    function self.getGuildCommands(guildID: string)
+        local data, err = API.getAllGuildApplicationCommands(guildID)
+        return data, err
+    end
+
+    --[=[
+
+        @within Session
+        @param guildID string
+        @param data Command -- A command object created by Lumi builders.
+
+        Register a guild-only application command in your BOT.
+
+        @return (error: string?)
+
+    ]=]
+
+    function self.registerGuildCommand(guildID: string, data: Data): string?
+        local _, err = API.createGuildApplicationCommand(guildID, data)
+        return err and err.message
+    end
+
+    --[=[
+
+        @within Session
+        @param ID string -- The ID of the command you want to delete.
+
+        @return (error: string?)
+
+    ]=]
+
+    function self.deleteGuildCommand(guildID: string, ID: string)
+        local _, err = API.deleteGuildApplicationCommand(guildID, ID)
+        return err and err.message
+    end
+
+    --[=[
+
+        @within Session
+        @param interactionID string
         @param token string -- The interaction token.
         @param data Data | string -- The response data or message.
 
         Send a response to an interaction.
+
+        ::info Topologically-aware
+        This function is only usable if called within the context of Session.connect()
+        :::
+
+        @return (error: string?)
 
     ]=]
 
@@ -271,7 +330,7 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param channelID string -- The ID of the channel.
+        @param channelID string
         @param data string | {} -- The message content.
         @param replyTo string? -- The ID of the message to reply to.
 
@@ -280,8 +339,8 @@ return Component.wrap('Session', function(self): Session
 
         @return (error: string?) 
 
-        :::info Topologically-aware
-        This function is only usable if called within the context of Session.login 
+        ::info Topologically-aware
+        This function is only usable if called within the context of Session.connect()
         :::
 
     ]=]

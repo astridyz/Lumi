@@ -14,22 +14,27 @@ type Data = Component.Data
 type Mutex = Mutex.Mutex
 
 export type API = {
-    authenticate: (Token: string) -> (Data, Error),
+    authenticate: (Token: string) -> (Data?, Error),
 
-    getCurrentUser: () -> (Data, Error),
-    getGatewayBot: () -> (Data, Error),
-    getGateway: () -> (Data, Error),
+    getCurrentUser: () -> (Data?, Error),
+    getGatewayBot: () -> (Data?, Error),
+    getGateway: () -> (Data?, Error),
 
-    getCurrentApplication: () -> (Data, Error),
+    getCurrentApplication: () -> (Data?, Error),
 
-    createGlobalApplicationCommand: (ID: string, payload: Data) -> (Data, Error),
-    getGlobalApplicationCommand: (ID: string, commandID: string) -> (Data, Error),
-    deleteGlobalApplicationCommand: (ID: string, commandID: string) -> (Data, Error),
-    createGuildApplicationCommand: (ID: string, guildID: string, payload: Data) -> (Data, Error),
+    getAllGlobalApplicationCommands: () -> (Data?, Error),
+    getAllGuildApplicationCommands: (guildID: string) -> (Data?, Error),
 
-    createInteractionResponse: (ID: string, token: string, payload: Data) -> (Data, Error),
+    createGlobalApplicationCommand: (payload: Data) -> (Data?, Error),
+    getGlobalApplicationCommand: (commandID: string) -> (Data?, Error),
+    deleteGlobalApplicationCommand: (commandID: string) -> (Data?, Error),
 
-    createMessage: (channelID: string, payload: Data) -> (Data, Error),
+    deleteGuildApplicationCommand: (guildID: string, ID: string) -> (Data?, Error),
+    createGuildApplicationCommand: (guildID: string, payload: Data) -> (Data?, Error),
+
+    createInteractionResponse: (interactionID: string, token: string, payload: Data) -> (Data?, Error),
+
+    createMessage: (channelID: string, payload: Data) -> (Data?, Error),
 }
 
 export type Error = {
@@ -52,6 +57,8 @@ return Component.wrap('Rest', function(self): API
     local Headers
     local Mutexes = setmetatable({}, meta)
 
+    local ApplicationID;
+
         local function sendRequest(...)
             local delay = Constants.defaultDelay
             local success, response = pcall(net.request, ...)
@@ -64,7 +71,7 @@ return Component.wrap('Rest', function(self): API
             return success, response, delay
         end
 
-        local function request(method: httpMethod, endpoint: string, payload: Data?): any
+        local function request(method: httpMethod, endpoint: string, payload: Data?): (Data?, Error)
             local url = Constants.apiUrl .. endpoint
             local mutex = Mutexes[endpoint] :: Mutex
 
@@ -111,28 +118,46 @@ return Component.wrap('Rest', function(self): API
 
     --// Application Commands
     function self.getCurrentApplication()
-        return request('GET', '/applications/@me')
+        local app, err = request('GET', '/applications/@me')
+
+        if app then
+            ApplicationID = app.id
+        end
+
+        return app, err
     end
 
-    function self.createGlobalApplicationCommand(ID: string, payload: Data)
-        return request('POST', '/applications/' .. ID .. '/commands', payload)
+    function self.getAllGlobalApplicationCommands()
+        return request('GET', '/applications/' .. ApplicationID .. '/commands')
     end
 
-    function self.getGlobalApplicationCommand(ID: string, commandID: string)
-        return request('GET', '/applications/' .. ID .. '/commands/' .. commandID)
+    function self.createGlobalApplicationCommand(payload: Data)
+        return request('POST', '/applications/' .. ApplicationID .. '/commands', payload)
     end
 
-    function self.deleteGlobalApplicationCommand(ID: string, commandID: string)
-        return request('DELETE', '/applications/' .. ID .. '/commands/' .. commandID)
+    function self.getGlobalApplicationCommand(commandID: string)
+        return request('GET', '/applications/' .. ApplicationID .. '/commands/' .. commandID)
     end
 
-    function self.createGuildApplicationCommand(ID: string, guildID: string, payload: Data)
-        return request('POST', '/applications/' .. ID .. '/guilds/' .. guildID .. '/commands', payload)
+    function self.deleteGlobalApplicationCommand(commandID: string)
+        return request('DELETE', '/applications/' .. ApplicationID .. '/commands/' .. commandID)
+    end
+
+    function self.getAllGuildApplicationCommands(guildID: string)
+        return request('GET', '/applications/' .. ApplicationID .. '/guilds/' .. guildID .. '/commands')
+    end
+
+    function self.createGuildApplicationCommand(guildID: string, payload: Data)
+        return request('POST', '/applications/' .. ApplicationID .. '/guilds/' .. guildID .. '/commands', payload)
+    end
+
+    function self.deleteGuildApplicationCommand(guildID: string, ID: string)
+        return request('DELETE', '/applications/' .. ApplicationID .. '/guilds/' .. guildID .. '/commands/' .. ID)
     end
 
     --// Interaction Responses
-    function self.createInteractionResponse(ID: string, token: string, payload: Data)
-        return request('POST', '/interactions/' .. ID .. '/' .. token .. '/callback', payload)
+    function self.createInteractionResponse(interactionID: string, token: string, payload: Data)
+        return request('POST', '/interactions/' .. ApplicationID .. '/' .. token .. '/callback', payload)
     end
 
     --// Message Related
