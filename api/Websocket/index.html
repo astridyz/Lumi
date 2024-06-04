@@ -16,8 +16,8 @@ and receiving of messages.
 Data inside components are sensitive and could break Lumi if changed.  
 Do not change or create components without reading the docs information.
 :::"><link data-rh="true" rel="icon" href="/Lumi/favicon.svg"><link data-rh="true" rel="canonical" href="https://astridyz.github.io/Lumi/api/Websocket"><link data-rh="true" rel="alternate" href="https://astridyz.github.io/Lumi/api/Websocket" hreflang="en"><link data-rh="true" rel="alternate" href="https://astridyz.github.io/Lumi/api/Websocket" hreflang="x-default"><link rel="stylesheet" href="/Lumi/assets/css/styles.d8af78ac.css">
-<link rel="preload" href="/Lumi/assets/js/runtime~main.38f219e7.js" as="script">
-<link rel="preload" href="/Lumi/assets/js/main.6064cb80.js" as="script">
+<link rel="preload" href="/Lumi/assets/js/runtime~main.d2c1970d.js" as="script">
+<link rel="preload" href="/Lumi/assets/js/main.eedd96cd.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -36,15 +36,15 @@ Do not change or create components without reading the docs information.
     <p>Data inside components are sensitive and could break Lumi if changed.<br>Do not change or create components without reading the docs information.</p>
   </div>
 </div>
-</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="send"><code style="text-decoration:none">send</code><a href="#send" class="hash-link" aria-label="Direct link to send" title="Direct link to send">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Websocket.lua#L84"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">send</code><code>(</code><div class="inset_uKQm"><div><code>opcode<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="send"><code style="text-decoration:none">send</code><a href="#send" class="hash-link" aria-label="Direct link to send" title="Direct link to send">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Socket.lua#L84"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">send</code><code>(</code><div class="inset_uKQm"><div><code>opcode<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
 <p>The opcode of the message.</p>
 </span></span></div><div><code>data<!-- -->: </code><code class="blue_P4bS">any</code><span class="inlineDescription_G7Er">-- <span>
 <p>The payload of the message.</p>
 </span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Sends a message through the WebSocket.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="open"><code style="text-decoration:none">open</code><a href="#open" class="hash-link" aria-label="Direct link to open" title="Direct link to open">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Websocket.lua#L100"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">open</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="open"><code style="text-decoration:none">open</code><a href="#open" class="hash-link" aria-label="Direct link to open" title="Direct link to open">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Socket.lua#L100"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">open</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Opens the WebSocket connection and starts processing incoming messages.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="close"><code style="text-decoration:none">close</code><a href="#close" class="hash-link" aria-label="Direct link to close" title="Direct link to close">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Websocket.lua#L119"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">close</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="close"><code style="text-decoration:none">close</code><a href="#close" class="hash-link" aria-label="Direct link to close" title="Direct link to close">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/astridyz/Lumi/blob/main/src/Structure/API/Socket.lua#L119"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Websocket<!-- -->.</code><code class="green_DgR4">close</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Closes the WebSocket connection.</p>
 </div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
     &quot;functions&quot;: [
@@ -67,7 +67,7 @@ Do not change or create components without reading the docs information.
             &quot;function_type&quot;: &quot;static&quot;,
             &quot;source&quot;: {
                 &quot;line&quot;: 84,
-                &quot;path&quot;: &quot;src/Structure/API/Websocket.lua&quot;
+                &quot;path&quot;: &quot;src/Structure/API/Socket.lua&quot;
             }
         },
         {
@@ -78,7 +78,7 @@ Do not change or create components without reading the docs information.
             &quot;function_type&quot;: &quot;static&quot;,
             &quot;source&quot;: {
                 &quot;line&quot;: 100,
-                &quot;path&quot;: &quot;src/Structure/API/Websocket.lua&quot;
+                &quot;path&quot;: &quot;src/Structure/API/Socket.lua&quot;
             }
         },
         {
@@ -89,7 +89,7 @@ Do not change or create components without reading the docs information.
             &quot;function_type&quot;: &quot;static&quot;,
             &quot;source&quot;: {
                 &quot;line&quot;: 119,
-                &quot;path&quot;: &quot;src/Structure/API/Websocket.lua&quot;
+                &quot;path&quot;: &quot;src/Structure/API/Socket.lua&quot;
             }
         }
     ],
@@ -99,10 +99,10 @@ Do not change or create components without reading the docs information.
     &quot;desc&quot;: &quot;Manages the WebSocket connection to Discord&#x27;s Gateway, handling the sending \nand receiving of messages.\n\n:::caution Sensitive\nData inside components are sensitive and could break Lumi if changed.  \nDo not change or create components without reading the docs information.\n:::&quot;,
     &quot;source&quot;: {
         &quot;line&quot;: 40,
-        &quot;path&quot;: &quot;src/Structure/API/Websocket.lua&quot;
+        &quot;path&quot;: &quot;src/Structure/API/Socket.lua&quot;
     }
 }</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#close" class="table-of-contents__link toc-highlight">.close</a></li><li><a href="#open" class="table-of-contents__link toc-highlight">.open</a></li><li><a href="#send" class="table-of-contents__link toc-highlight">.send</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Built using Docusaurus and Moonwave. Released under the <a href="https://github.com/astridyz/Lumi/blob/main/LICENSE" target="_blank">MIT License</a>.</div></div></div></footer></div>
-<script src="/Lumi/assets/js/runtime~main.38f219e7.js"></script>
-<script src="/Lumi/assets/js/main.6064cb80.js"></script>
+<script src="/Lumi/assets/js/runtime~main.d2c1970d.js"></script>
+<script src="/Lumi/assets/js/main.eedd96cd.js"></script>
 </body>
 </html>
