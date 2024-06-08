@@ -1,6 +1,9 @@
 return {
     session = require 'src/Structure/Session',
-    builders = require 'src/Structure/Builders',
+    builders = {
+        command = require 'src/Structure/Builders/Command',
+        option = require 'src/Structure/Builders/Option'
+    },
     component = require 'src/Component',
     constants = require 'src/Constants',
     events = require 'src/Events',

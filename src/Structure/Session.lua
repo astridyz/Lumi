@@ -16,6 +16,8 @@ local User = require 'Serialized/User'
 local Message = require 'Serialized/Message'
 local Application = require 'Serialized/Application'
 
+local Command = require 'Builders/Command'
+
 --// Types
 type Error = Rest.Error
 
@@ -29,6 +31,9 @@ type Application = Application.Application
 
 type Identify = Shard.Identify
 
+type CommandBuilder = Command.CommandBuilder
+type Command = Command.CommandBuilt
+
 export type Session = {
     login: (token: string) -> (),
     identify: Identify,
@@ -40,14 +45,13 @@ export type Session = {
 
     listen: <args...>(event: Event<args...>, callback: (args...) -> ()) -> (),
 
-    getGuildCommands: (guildID: string) -> (Data?, Error),
     getGlobalCommands: () -> (Data?, Error),
-
-    registerGlobalCommand: (commandData: Data) -> string?,
+    registerGlobalCommand: (command: CommandBuilder) -> string?,
     deleteGlobalCommand: (ID: string) -> string?,
 
+    getGuildCommands: (guildID: string) -> (Data?, Error),
+    registerGuildCommand: (guildID: string, command: CommandBuilder) -> string?,
     deleteGuildCommand: (guildID: string, ID: string) -> string?,
-    registerGuildCommand: (guildID: string, data: Data) -> string?,
 
     replyInteraction: (interactionID: string, interactionToken: string, content: Data) -> string?,
 
@@ -213,7 +217,7 @@ return Component.wrap('Session', function(self): Session
 
         Return a table with all the global current commands your bot has.
 
-        @return (data: {Command}?, error: string?)
+        @return (data: {}?, error: string?)
 
     ]=]
 
@@ -233,7 +237,9 @@ return Component.wrap('Session', function(self): Session
 
     ]=]
 
-    function self.registerGlobalCommand(data: Data): string?
+    function self.registerGlobalCommand(command: CommandBuilder): string?
+        local data = command.get()
+
         local _, err = API.createGlobalApplicationCommand(data)
         return err and err.message
     end
@@ -260,7 +266,7 @@ return Component.wrap('Session', function(self): Session
 
         Returns a table of commands registred in the defined guild.
 
-        @return (data: {Command}?, error: string?)
+        @return (data: {}?, error: string?)
 
     ]=]
 
@@ -281,7 +287,9 @@ return Component.wrap('Session', function(self): Session
 
     ]=]
 
-    function self.registerGuildCommand(guildID: string, data: Data): string?
+    function self.registerGuildCommand(guildID: string, command: CommandBuilder): string?
+        local data = command.get()
+
         local _, err = API.createGuildApplicationCommand(guildID, data)
         return err and err.message
     end

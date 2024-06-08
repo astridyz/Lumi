@@ -8,29 +8,32 @@ type Data = Component.Data
 
 type ApplicationCommandOptionType = Enums.ApplicationCommandOptionType
 
-export type OptionBuilt = {
+type OptionParams = {
     name: string,
     description: string,
     required: boolean,
     type: ApplicationCommandOptionType
 }
 
-type OptionParam = {
+export type Option = {
     name: string,
     description: string,
     required: boolean,
-    type: ApplicationCommandOptionType
+    type: ApplicationCommandOptionType,
 }
 
-type OptionBuilder = {
+export type OptionBuilder = {
     setName: (name: string) -> (),
     setDescription: (description: string) -> (),
     setType: (type: ApplicationCommandOptionType) -> (),
     setRequired: () -> (),
+    setStringLength: (min: number, max: number?) -> (),
+    setNumberLength: (min: number, max: number?) -> (),
+    get: () -> Option
 }
 
 --// This
-return Component.wrap('Option', function(self, data: OptionParam?)
+return Component.wrap('OptionBuilder', function(self, data: OptionParams?)
     --// Public
     local option = {}
 
@@ -71,15 +74,10 @@ return Component.wrap('Option', function(self, data: OptionParam?)
         option.min_value = min
         option.max_value = max
     end
-
-    --// Meta
-    local meta = {}
     
-    function meta:__call()
+    function self.get()
         return option
     end
-
-    setmetatable(self, meta)
     
     return self.query()
 end)

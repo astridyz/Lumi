@@ -8,7 +8,11 @@ local Option = require 'Option'
 --// Types
 type Data = Component.Data
 
-type Option = Option.OptionBuilt
+type Option = Option.Option
+type OptionBuilder = Option.OptionBuilder
+
+type ApplicationCommandType = Enums.ApplicationCommandType
+type InteractionContextType = Enums.InteractionContextType
 
 type SlashParam = {
     name: string,
@@ -16,11 +20,8 @@ type SlashParam = {
     type: ApplicationCommandType
 }
 
-type ApplicationCommandType = Enums.ApplicationCommandType
-type InteractionContextType = Enums.InteractionContextType
-
-type SlashBuilt = {
-    name: string,
+export type CommandBuilt = {
+    name: string?,
     description: string,
     type: ApplicationCommandType,
     options: {Option},
@@ -28,19 +29,18 @@ type SlashBuilt = {
     contexts: {InteractionContextType}
 }
 
-export type slashCommandBuilder = typeof(setmetatable({} :: {
+export type CommandBuilder = {
     setName: (name: string) -> (),
     setDescription: (description: string) -> (),
     setType: (type: ApplicationCommandType) -> (),
-    addOption: (option: Option) -> (),
+    addOption: (option: OptionBuilder) -> (),
     enableNSFW: () -> (),
     setContexts: (contexts: {InteractionContextType}) -> (),
-}, {} :: {
-    __call: () -> SlashBuilt
-}))
+    get: () -> CommandBuilt
+}
 
 --// This
-return Component.wrap('SlashCommand', function(self, data: SlashParam?): slashCommandBuilder
+return Component.wrap('CommandBuilder', function(self, data: SlashParam?): CommandBuilder
     --// Public
     local slash = {}
 
@@ -65,10 +65,12 @@ return Component.wrap('SlashCommand', function(self, data: SlashParam?): slashCo
         slash.type = type
     end
 
-    function self.addOption(option: Option)
+    function self.addOption(option: OptionBuilder)
         assert(slash.type == 1, 'Options are only available for commands of type CHAT_INPUT')
 
-        table.insert(slash.options, option)
+        local adding = option.get()
+
+        table.insert(slash.options, adding)
     end
 
     function self.enableNSFW()
@@ -79,14 +81,9 @@ return Component.wrap('SlashCommand', function(self, data: SlashParam?): slashCo
         slash.contexts = contexts
     end
 
-    --// Meta
-    local meta = {}
-    
-    function meta:__call()
+    function self.get()
         return slash
     end
-
-    setmetatable(self, meta)
 
     return self.query()
 end)
