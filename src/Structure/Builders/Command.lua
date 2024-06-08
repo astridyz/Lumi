@@ -30,12 +30,12 @@ export type CommandBuilt = {
 }
 
 export type CommandBuilder = {
-    setName: (name: string) -> (),
-    setDescription: (description: string) -> (),
-    setType: (type: ApplicationCommandType) -> (),
-    addOption: (option: OptionBuilder) -> (),
-    enableNSFW: () -> (),
-    setContexts: (contexts: {InteractionContextType}) -> (),
+    setName: (name: string) -> CommandBuilder,
+    setDescription: (description: string) -> CommandBuilder,
+    setType: (type: ApplicationCommandType) -> CommandBuilder,
+    addOption: (option: OptionBuilder) -> CommandBuilder,
+    enableNSFW: () -> CommandBuilder,
+    setContexts: (contexts: {InteractionContextType}) -> CommandBuilder,
     get: () -> CommandBuilt
 }
 
@@ -55,30 +55,41 @@ return Component.wrap('CommandBuilder', function(self, data: SlashParam?): Comma
     --// Methods
     function self.setName(name: string)
         slash.name = name
+
+        return self
     end
 
     function self.setDescription(description: string)
         slash.description = description
+
+        return self
     end
     
     function self.setType(type: ApplicationCommandType)
         slash.type = type
+
+        return self
     end
 
     function self.addOption(option: OptionBuilder)
-        assert(slash.type == 1, 'Options are only available for commands of type CHAT_INPUT')
+        assert(slash.type == 1 or slash.type == nil, 'Options are only available for commands of type CHAT_INPUT')
 
-        local adding = option.get()
+        local data = option.get()
+        table.insert(slash.options, data)
 
-        table.insert(slash.options, adding)
+        return self
     end
 
     function self.enableNSFW()
         slash.nsfw = true
+
+        return self
     end
 
     function self.setContexts(contexts: {InteractionContextType})
         slash.contexts = contexts
+
+        return self
     end
 
     function self.get()

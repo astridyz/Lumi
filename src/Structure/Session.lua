@@ -208,6 +208,7 @@ return Component.wrap('Session', function(self): Session
 
     function self.listen<args...>(event: Event<args...>, callback: (args...) -> ()): ()
         assert(Events[event.index], 'Invalid event type')
+        
         return EventHandler.listen(event.name, callback)
     end
 

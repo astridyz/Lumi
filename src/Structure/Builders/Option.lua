@@ -20,20 +20,24 @@ export type Option = {
     description: string,
     required: boolean,
     type: ApplicationCommandOptionType,
+    min_length: number,
+    max_length: number?,
+    min_value: number,
+    max_value: number?
 }
 
 export type OptionBuilder = {
-    setName: (name: string) -> (),
-    setDescription: (description: string) -> (),
-    setType: (type: ApplicationCommandOptionType) -> (),
-    setRequired: () -> (),
-    setStringLength: (min: number, max: number?) -> (),
-    setNumberLength: (min: number, max: number?) -> (),
+    setName: (name: string) -> OptionBuilder,
+    setDescription: (description: string) -> OptionBuilder,
+    setType: (type: ApplicationCommandOptionType) -> OptionBuilder,
+    setRequired: () -> OptionBuilder,
+    setStringLength: (min: number, max: number?) -> OptionBuilder,
+    setNumberLength: (min: number, max: number?) -> OptionBuilder,
     get: () -> Option
 }
 
 --// This
-return Component.wrap('OptionBuilder', function(self, data: OptionParams?)
+return Component.wrap('OptionBuilder', function(self, data: OptionParams?): OptionBuilder
     --// Public
     local option = {}
 
@@ -47,18 +51,26 @@ return Component.wrap('OptionBuilder', function(self, data: OptionParams?)
     --// Methods
     function self.setName(name: string)
         option.name = name
+
+        return self
     end
 
     function self.setDescription(description: string)
         option.description = description
+
+        return self
     end
     
     function self.setType(type: ApplicationCommandOptionType)
         option.type = type
+
+        return self
     end
 
     function self.setRequired()
         option.required = true
+
+        return self
     end
 
     function self.setStringLength(min: number, max: number?)
@@ -66,6 +78,8 @@ return Component.wrap('OptionBuilder', function(self, data: OptionParams?)
 
         option.min_length = min
         option.max_length = max
+
+        return self
     end
 
     function self.setNumberLength(min: number, max: number?)
@@ -73,6 +87,8 @@ return Component.wrap('OptionBuilder', function(self, data: OptionParams?)
 
         option.min_value = min
         option.max_value = max
+        
+        return self
     end
     
     function self.get()
