@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[2264],{63891:e=>{e.exports=JSON.parse('{"sourceUrl":"https://github.com/astridyz/Lumi/blob/main","baseUrl":"/Lumi/","classOrder":["Session","State","Guild","Role","Channel","Member","Message","User","Application","Command Response"],"apiCategories":[]}')}}]);
