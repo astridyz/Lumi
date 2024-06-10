@@ -7,6 +7,9 @@ changelog = true
 classOrder = [
     "Session",
     "State",
+    "Enums",
+    "CommandBuilder",
+    "OptionBuilder",
     "Guild",
     "Role",
     "Channel",

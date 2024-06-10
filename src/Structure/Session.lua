@@ -37,7 +37,7 @@ type Command = Command.CommandBuilt
 export type Session = {
     login: (token: string) -> (),
     identify: Identify,
-    connect: () -> string?,
+    connect: () -> (),
     
     state: State,
     user: User,
@@ -142,7 +142,7 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param token string -- Your application token
+        @param token string
 
         Authenticates your token in Discord API. 
         Trying to call `Session.connect()` without a valid token 
@@ -168,11 +168,9 @@ return Component.wrap('Session', function(self): Session
         Connects to Discord Gateway, opening the websocket connection.  
         After calling it, your bot should go online and receive all Discord events.
 
-        @return (error: string?)
-
     ]=]
 
-    function self.connect(): string?
+    function self.connect()
         assert(Token ~= nil, 'No token available, authenticate first.')
 
         local Data, err = API.getGatewayBot()
@@ -186,7 +184,6 @@ return Component.wrap('Session', function(self): Session
             task.wait(1)
         end
 
-        return nil
     end
 
     --[=[
@@ -230,7 +227,7 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param data Command -- A command object created by Lumi builders.
+        @param command CommandBuilder -- A builder object created by Lumi builders.
 
         Register a global application command in your BOT.
 
@@ -248,7 +245,7 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param ID string -- The ID of the command to be deleted.
+        @param ID string
 
         Delete a global application command in your BOT.
 
@@ -280,7 +277,7 @@ return Component.wrap('Session', function(self): Session
 
         @within Session
         @param guildID string
-        @param data Command -- A command object created by Lumi builders.
+        @param command CommandBuilder -- A builder object created by Lumi builders.
 
         Register a guild-only application command in your BOT.
 
@@ -298,7 +295,7 @@ return Component.wrap('Session', function(self): Session
     --[=[
 
         @within Session
-        @param ID string -- The ID of the command you want to delete.
+        @param ID string
 
         @return (error: string?)
 
@@ -313,8 +310,8 @@ return Component.wrap('Session', function(self): Session
 
         @within Session
         @param interactionID string
-        @param token string -- The interaction token.
-        @param data Data | string -- The response data or message.
+        @param token string
+        @param data {} | string
 
         Send a response to an interaction.
 
@@ -340,8 +337,8 @@ return Component.wrap('Session', function(self): Session
 
         @within Session
         @param channelID string
-        @param data string | {} -- The message content.
-        @param replyTo string? -- The ID of the message to reply to.
+        @param data {} | string
+        @param replyTo string?
 
         Sends a message in the given channel.  
         The content table needs to be created using builders available in Lumi.
@@ -361,12 +358,7 @@ return Component.wrap('Session', function(self): Session
             payload.message_reference = {message_id = replyTo}
         end
 
-        local Data, error = API.createMessage(channelID, payload)
-
-        if not Data and error then
-            return nil, 'Could not send message: ' .. error.message
-        end
-
+        local _, error = API.createMessage(channelID, payload)
         return error and error.message
     end
 

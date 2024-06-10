@@ -1,4 +1,12 @@
 --// This
+
+--[=[
+
+    @class Enums
+    The main interface for getting Discord flags or information.
+
+]=]
+
 local Enums = {}
 
 --// Functions
@@ -11,7 +19,25 @@ export type ApplicationCommandType = number
 export type InteractionContextType = number
 export type ApplicationCommandOptionType = number
 
+export type GatewayIntent = number
+
 --// Enums
+
+--[=[
+
+    @prop gatewayEvents {GatewayIntent}
+    @within Enums
+
+]=]
+
+--[=[
+
+    @type GatewayIntent number
+    @within Gateway
+    A unique identifier to get certain events.
+
+]=]
+
 Enums.gatewayIntents = {
     -- guilds               = flag(0), (Default intent)
     guildMembers            = flag(1), --// privileged
@@ -34,7 +60,39 @@ Enums.gatewayIntents = {
     autoModExecution        = flag(21),
     guildMessagePolls       = flag(24),
     directMessagePolls      = flag(25),
+} :: {
+        guildMembers: GatewayIntent,
+        guildEmojisAndStickers: GatewayIntent,
+        guildIntegrations: GatewayIntent,
+        guildWebhooks: GatewayIntent,
+        guildInvites: GatewayIntent,
+        guildVoiceStates: GatewayIntent,
+        guildPresences: GatewayIntent,
+        guildMessageTyping: GatewayIntent,
+        directMessageReactions: GatewayIntent,
+        directMessageTyping: GatewayIntent,
+        messageContent: GatewayIntent,
+        guildScheduledEvents: GatewayIntent,
+        autoModConfiguration: GatewayIntent,
+        autoModExecution: GatewayIntent,
+        guildMessagePolls: GatewayIntent,
+        directMessagePolls: GatewayIntent,
 }
+
+--[=[
+
+    @prop applicationCommandTypes {ApplicationCommandType}
+    @within Enums
+
+]=]
+
+--[=[
+
+    @type ApplicationCommandType number
+    @within CommandBuilder
+    The type of the command. Available at [Enums](/api/Enums).
+
+]=]
 
 Enums.applicationCommandTypes = {
     chatInput = 1,
@@ -46,7 +104,22 @@ Enums.applicationCommandTypes = {
     slash: ApplicationCommandType
 }
 
-Enums.InteractionContextTypes = {
+--[=[
+
+    @prop interactionContextTypes {InteractionContextType}
+    @within Enums
+
+]=]
+
+--[=[
+
+    @type InteractionContextType number
+    @within CommandBuilder
+    The contexts the command can be used. Available at [Enums](/api/Enums).
+
+]=]
+
+Enums.interactionContextTypes = {
     guild = 0,
     botDm = 1,
     privateChannel = 2
@@ -56,7 +129,22 @@ Enums.InteractionContextTypes = {
     privateChannel: InteractionContextType
 }
 
-Enums.ApplicationCommandOptionTypes = {
+--[=[
+
+    @prop applicationCommandOptionTypes {ApplicationCommandOptionType}
+    @within Enums
+
+]=]
+
+--[=[
+
+    @type ApplicationCommandOptionType number
+    @within OptionBuilder
+    The type of the option. Available at [Enums](/api/Enums).
+
+]=]
+
+Enums.applicationCommandOptionTypes = {
     subCommand = 1,
     subCommandGroup = 2,
     string = 3,
