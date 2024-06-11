@@ -46,6 +46,10 @@ Session.identify.intents = {
 Session.connect()
 ```
 
+:::tip
+You can check for a full example there: https://github.com/astridyz/Lumi/blob/main/examples/intents.lua
+:::
+
 ### Wait, bitwise values?
 
 The intent number `47047`, for example, represents a combination of multiple Discord Gateway intents, allowing your bot to listen to various events.

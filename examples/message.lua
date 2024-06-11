@@ -1,7 +1,8 @@
 --// Creating session
 local Lumi = require '../init'
 
-local Session = Lumi.session() --// Session is a factory function
+--// Session is a factory function
+local Session = Lumi.session()
 
 --// Events constants, needed to listen to events
 local Events = Lumi.events
@@ -21,4 +22,5 @@ Session.listen(Events.messageCreate, function(message)
     --// and you think there's no need to do it, go for it.
 end)
 
-Session.connect() --// Open gateway connection, your bot should go online now
+--// Open gateway connection, your bot should go online now
+Session.connect()
