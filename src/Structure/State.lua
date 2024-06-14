@@ -1,24 +1,24 @@
 --!strict
---// Requires
+--// Packages
 local Component = require '../Component'
-
-local Cache = require 'Cache'
-
-local Guild = require 'Serialized/Guild'
-local User = require 'Serialized/User'
-local Channel = require 'Serialized/Channel'
-local Role = require 'Serialized/Role'
-
---// Types
-type Cache<asyncs> = Cache.Cache<asyncs>
-
 type Data = Component.Data
 
+local Cache = require 'Cache'
+type Cache<asyncs> = Cache.Cache<asyncs>
+
+local Guild = require 'Serialized/Guild'
 type Guild = Guild.Guild
+
+local User = require 'Serialized/User'
 type User = User.User
+
+local Channel = require 'Serialized/Channel'
 type Channel = Channel.Channel
+
+local Role = require 'Serialized/Role'
 type Role = Role.Role
 
+--// Types
 export type State = {
     addData: (data: any) -> (),
     removeData: (ID: string, container: string) -> (),
@@ -59,9 +59,7 @@ return Component.wrap('State', function(self): State
     ]=]
 
     function self.addData(data: any)
-        local Cache = Asyncs.find(data.prototype)
-
-        if not Cache then
+        if not Asyncs.find(data.prototype) then
             return
         end
 
@@ -71,8 +69,8 @@ return Component.wrap('State', function(self): State
     --[=[
 
         @within State
-        @param ID string -- The ID of the data to be removed.
-        @param container string -- The container type of the data.
+        @param ID string
+        @param container string
 
         Removes data from the appropriate cache based on its container type.
 

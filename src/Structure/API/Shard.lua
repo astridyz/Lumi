@@ -3,29 +3,29 @@
 local Component = require '../../Component'
 local Constants = require '../../Constants'
 
+local task = require '@lune/task'
+
 local urlPath = Constants.gatewayPath
-local Codes = Constants.gatewayCodes
 local closeCodes = Constants.closeCodes
 local closeErrors = Constants.closeErrors
 
-local net = require '@lune/net' 
-local task = require '@lune/task'
-
-local Listen = require '../Listen'
-local Websocket = require 'Socket'
-local Serializer = require '../Serializer'
-local Mutex = require '../Mutex'
-
---// Types
+local net = require '@lune/net'
 type httpSocket = net.WebSocket
 
+local Listen = require '../Listen'
 type Listener = Listen.Listener
-type Socket = Websocket.Socket
-type Mutex = Mutex.Mutex
 
+local Websocket = require 'Socket'
+type Socket = Websocket.Socket
+
+local Serializer = require '../Serializer'
 type Payload = Serializer.Payload
 type Serializer = Serializer.Serializer
 
+local Mutex = require '../Mutex'
+type Mutex = Mutex.Mutex
+
+--// Types
 export type Identify = {
     intents: {number},
     presence: {
@@ -38,7 +38,8 @@ export type Gateway = {
     bind: (shardID: number, totalShard: number, host: string, identify: Identify) -> (),
     reconnect: () -> (),
     resume: () -> (),
-    handshake: () -> ()
+    handshake: () -> (),
+    waitForHandshake: () -> ()
 }
 
 --[=[
@@ -55,7 +56,7 @@ export type Gateway = {
 ]=]
 
 --// This
-return Component.wrap('Gateway', function(self, token: string, EventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
+return Component.wrap('Gateway', function(self, token: string, eventHandler: Listener, serializer: Serializer, mutex: Mutex): Gateway
     --// Private
     local heartbeatInterval
     local session = {}
@@ -65,30 +66,36 @@ return Component.wrap('Gateway', function(self, token: string, EventHandler: Lis
     local Identify
 
     local urlHost
+    local performedHandshake
     
     local Heartbeating
-    local Socket: Socket
+    local Socket
 
     local CodeHandler = Listen()
 
-    local function sendHeartBeat()
+    local handlers = {}
+
+    function handlers.heartbeatAck()
         Socket.send(1, eventSequence)
     end
 
     local function heartBeat()
         while task.wait(heartbeatInterval) do
-            sendHeartBeat()
+            handlers.heartbeatAck()
         end
     end
 
-    local function setupHeartBeat(package: Payload)
+    function handlers.hello(package: Payload)
         heartbeatInterval = package.d.heartbeat_interval * 10^-3 * .75
-        if not Heartbeating then
-            Heartbeating = task.spawn(heartBeat)
+
+        if Heartbeating then
+            return
         end
+
+        Heartbeating = task.spawn(heartBeat)
     end
 
-    local function handleDispatch(package: Payload)
+    function handlers.dispatch(package: Payload)
         if package.t == 'READY' then
             session = {ID = package.d.session_id, URL = package.d.resume_gateway_url}
         end
@@ -96,10 +103,10 @@ return Component.wrap('Gateway', function(self, token: string, EventHandler: Lis
         eventSequence = package.s
 
         local event, data = serializer.payload(package)
-        EventHandler.emit(event, data)
+        eventHandler.emit(event, data)
     end
 
-    local function tryResume(closeCode: number?)
+    function handlers.reconnect(closeCode: number?)
         local canResume = closeCodes[closeCode]
         
         if canResume == false or canResume == nil then
@@ -113,19 +120,24 @@ return Component.wrap('Gateway', function(self, token: string, EventHandler: Lis
             return
         end
 
-        error('Error identified: ' .. closeErrors[closeCode] .. ' cannot resume or reconnect!', 2)
+        error('Error: ' .. closeErrors[closeCode] .. ' closing bot!', 2)
     end
 
-    local function unexpectedOpcode(package: Payload)
+    function handlers.unexpectedOpcode(package: Payload)
         error('Unexpected opcode: ' .. Constants.gatewayDescription[package.op])
     end
 
     local function initCodeHandler()
-        CodeHandler.listen(Codes.hello, setupHeartBeat)
-        CodeHandler.listen(Codes.reconnect, tryResume)
-        CodeHandler.listen(Codes.dispatch, handleDispatch)
-        CodeHandler.listen(Codes.heartbeat, sendHeartBeat)
-        CodeHandler.listen(Codes.invalidSession, unexpectedOpcode)
+        for _, code in pairs(Constants.gatewayCodes) do
+
+            local handler = handlers[Constants.gatewayDescription[code]]
+
+            if not handler then
+                CodeHandler.listen(code, handlers.unexpectedOpcode)
+            end
+
+            CodeHandler.listen(code, handler)
+        end
     end
 
     local function socket()
@@ -202,8 +214,8 @@ return Component.wrap('Gateway', function(self, token: string, EventHandler: Lis
         local intents = payload.intents
         
         if Identify.intents then
-            for _, number in ipairs(Identify.intents) do
-                intents = intents + number
+            for _, intent in ipairs(Identify.intents) do
+                intents = intents + intent
             end
         end
 
@@ -211,6 +223,20 @@ return Component.wrap('Gateway', function(self, token: string, EventHandler: Lis
         payload.intents = intents
         
         Socket.send(2, payload)
+        performedHandshake = true
+    end
+
+    --[=[
+    
+        @within Gateway
+
+        Yilding function to lock current coroutine until handshake is made.
+    
+    ]=]
+
+    function self.waitForHandshake()
+        repeat task.wait()
+        until performedHandshake == true
     end
 
     return self.query()

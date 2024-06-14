@@ -1,26 +1,25 @@
 --!strict
---// Requires
-local Component = require '../../Component'
+--// Packages
 local Constants = require '../../Constants'
 
-local net = require '@lune/net'
-
-local Mutex = require '../Mutex'
-
---// Types
-type httpMethod = net.HttpMethod
+local Component = require '../../Component'
 type Data = Component.Data
 
+local net = require '@lune/net'
+type httpMethod = net.HttpMethod
+
+local Mutex = require '../Mutex'
 type Mutex = Mutex.Mutex
 
+--// Types
 export type API = {
-    authenticate: (Token: string) -> (Data?, Error),
+    authenticate: (Token: string) -> (Data, Data),
 
-    getCurrentUser: () -> (Data?, Error),
+    getCurrentUser: () -> (Data, Error),
     getGatewayBot: () -> (Data?, Error),
     getGateway: () -> (Data?, Error),
 
-    getCurrentApplication: () -> (Data?, Error),
+    getCurrentApplication: () -> (Data, Error),
 
     getAllGlobalApplicationCommands: () -> (Data?, Error),
     getAllGuildApplicationCommands: (guildID: string) -> (Data?, Error),
@@ -57,55 +56,68 @@ return Component.wrap('Rest', function(self): API
     local Headers
     local Mutexes = setmetatable({}, meta)
 
-    local ApplicationID;
+    local ApplicationID: number;
 
-        local function sendRequest(...)
-            local delay = Constants.defaultDelay
-            local success, response = pcall(net.request, ...)
+    local function sendRequest(...)
+        local delay = Constants.defaultDelay
+        local success, response = pcall(net.request, ...)
 
-            if success and response.headers['x-ratelimit-remaining'] == '0' then
-                local resetAfter = tonumber(response.headers['x-ratelimit-reset-after'])
-                delay = resetAfter and math.max(resetAfter, delay) or delay
-            end
-
-            return success, response, delay
+        if success and response.headers['x-ratelimit-remaining'] == '0' then
+            local resetAfter = tonumber(response.headers['x-ratelimit-reset-after'])
+            delay = resetAfter and math.max(resetAfter, delay) or delay
         end
 
-        local function request(method: httpMethod, endpoint: string, payload: Data?): (Data?, Error)
-            local url = Constants.apiUrl .. endpoint
-            local mutex = Mutexes[endpoint] :: Mutex
+        return success, response, delay
+    end
 
-            mutex.lock()
-            local success, response, delay = sendRequest({
-                method = method, headers = Headers, url = url, body = payload 
-                and net.jsonEncode(payload) or nil
-            })
-            mutex.unlockAfter(delay)
+    local function request(method: httpMethod, endpoint: string, payload: Data?): (Data?, Error)
+        local url = Constants.apiUrl .. endpoint
+        local Mutex = Mutexes[endpoint] :: Mutex
 
-            if response.body == '' or response.body == ' ' then
-                return
-            end
-            
-            local body = net.jsonDecode(response.body)
+        Mutex.lock()
+        local success, response, delay = sendRequest(
+            {
+            method = method,
+            headers = Headers,
+            url = url,
+            body = payload and net.jsonEncode(payload) or nil
+        })
+        Mutex.unlockAfter(delay)
+        
+        local body = net.jsonDecode(response.body)
 
-            if success and response.ok then
-                return body
-            end
-
-            return nil, body
+        if success and response.ok then
+            return body
         end
+
+        return nil, body
+    end
     
+    local function fetchData(endpoint: string)
+        local data, err = request('GET', endpoint)
+    
+        if not data or err ~= nil then
+            error('Could not get data from: ' .. endpoint .. 'Error: ' .. err.message)
+        end
+        
+        return data :: Data
+    end
 
     --// Public
     function self.authenticate(token: string)
         Headers = Constants.defaultHeaders(token)
+        
+        local user = self.getCurrentUser()
+        local application = self.getCurrentApplication()
 
-        return self.getCurrentUser()
+        ApplicationID = application.id
+
+        return user, application
     end
 
     --// Gateway & User Requests
     function self.getCurrentUser()
-        return request('GET', '/users/@me')
+        return fetchData('/users/@me')
     end
 
     function self.getGateway()
@@ -118,13 +130,7 @@ return Component.wrap('Rest', function(self): API
 
     --// Application Commands
     function self.getCurrentApplication()
-        local app, err = request('GET', '/applications/@me')
-
-        if app then
-            ApplicationID = app.id
-        end
-
-        return app, err
+        return fetchData('/applications/@me')
     end
 
     function self.getAllGlobalApplicationCommands()

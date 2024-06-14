@@ -32,14 +32,14 @@ local Constants = {
         [0] = 'dispatch',
         [1] = 'heartbeat',
         [2] = 'identify',
-        [3] = 'presence update',
-        [4] = 'voice state update',
+        [3] = 'presenceUpdate',
+        [4] = 'voiceStateUpdate',
         [6] = 'resume',
         [7] = 'reconnect',
-        [8] = 'request guild members',
+        [8] = 'requestGuildMembers',
         [9] = 'invalid session',
         [10] = 'hello',
-        [11] = 'heartbeat ack'
+        [11] = 'heartbeatAck'
     },
     
     closeCodes = {

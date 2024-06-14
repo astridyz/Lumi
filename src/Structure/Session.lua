@@ -1,39 +1,38 @@
 --!strict
---// Requires
+--// Packages
 local Component = require '../Component'
-local Events = require '../Events'
-
-local task = require '@lune/task'
-
-local Rest = require 'API/Rest'
-local Shard = require 'API/Shard'
-local Listen = require 'Listen'
-local Serializer = require 'Serializer'
-local State = require 'State'
-local Mutex = require 'Mutex'
-
-local User = require 'Serialized/User'
-local Message = require 'Serialized/Message'
-local Application = require 'Serialized/Application'
-
-local Command = require 'Builders/Command'
-
---// Types
-type Error = Rest.Error
-
 type Data = Component.Data
+
+local Events = require '../Events'
 type Event<args...> = Events.Event<args...>
 
-type State = State.State
-type User = User.User
-type Message = Message.Message
-type Application = Application.Application
+local Rest = require 'API/Rest'
+type Error = Rest.Error
 
+local Shard = require 'API/Shard'
 type Identify = Shard.Identify
 
+local State = require 'State'
+type State = State.State
+
+local User = require 'Serialized/User'
+type User = User.User
+
+local Message = require 'Serialized/Message'
+type Message = Message.Message
+
+local Application = require 'Serialized/Application'
+type Application = Application.Application
+
+local Command = require 'Builders/Command'
 type CommandBuilder = Command.CommandBuilder
 type Command = Command.CommandBuilt
 
+local Listen = require 'Listen'
+local Serializer = require 'Serializer'
+local Mutex = require 'Mutex'
+
+--// Types
 export type Session = {
     login: (token: string) -> (),
     identify: Identify,
@@ -82,13 +81,6 @@ return Component.wrap('Session', function(self): Session
     local Mutex = Mutex()
 
     local Serializer = Serializer(self :: any, State)
-
-    local function getApplicationData(): Application
-        local botApp, err = API.getCurrentApplication()
-        assert(botApp or not err, 'Could not get application data')
-
-        return Serializer.data(botApp, Application)
-    end
 
     --// Public
 
@@ -154,11 +146,10 @@ return Component.wrap('Session', function(self): Session
         assert(token ~= nil, 'No token has been sent.')
         Token = token
 
-        local botUser, err = API.authenticate(Token)
-        assert(err == nil, 'Authentication failed: ' .. (err and err.message or 'unknown'))
+        local botUser, botApp = API.authenticate(Token)
 
         self.user = Serializer.data(botUser, User)
-        self.application = getApplicationData()
+        self.application = Serializer.data(botApp, Application)
     end
 
     --[=[
@@ -174,14 +165,14 @@ return Component.wrap('Session', function(self): Session
         assert(Token ~= nil, 'No token available, authenticate first.')
 
         local Data, err = API.getGatewayBot()
-        assert(Data ~= nil, 'Could not authenticate: ' .. tostring(err and err.message))
+        assert(Data ~= nil and err == nil, 'Could not authenticate: ' .. tostring(err and err.message))
 
         for shardID = 1, Data.shards do
             local shard = Shard(Token, EventHandler, Serializer, Mutex)
             Shards[shardID] = shard
 
             coroutine.wrap(shard.bind)(shardID - 1, Data.shards, Data.url, self.identify)
-            task.wait(1)
+            shard.waitForHandshake()
         end
 
     end

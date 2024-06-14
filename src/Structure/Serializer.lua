@@ -15,7 +15,7 @@ type Data = Component.Data
 
 export type Serializer = {
     payload: (package: Payload) -> (string, {any}?),
-    data: <Model>(rawData: Data?, factory: (...any) -> Model) -> Model
+    data: <Model>(rawData: Data, factory: (...any) -> Model) -> Model
 }
 
 export type Payload = {
@@ -43,7 +43,7 @@ export type Payload = {
 ]=]
 
 --// This
-return Component.wrap('Serializer', function(self, client: any, state: State): Serializer
+return Component.wrap('Serializer', function(self, client, state: State): Serializer
     --// Methods
 
     --[=[
@@ -76,11 +76,7 @@ return Component.wrap('Serializer', function(self, client: any, state: State): S
 
     ]=]
 
-    function self.data<Model>(rawData: Data?, factory: (...any) -> Model)
-        if not rawData then
-            return nil
-        end
-        
+    function self.data<model>(rawData: Data, factory: (...any) -> model): model
         local data = factory(rawData, client, self)
         state.addData(data)
 

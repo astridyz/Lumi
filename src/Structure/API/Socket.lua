@@ -1,23 +1,23 @@
 --!strict
---// Requires
-local Component = require '../../Component'
+--// Packages
 local Constants = require '../../Constants'
+local task = require '@lune/task'
 
 local gatewayDelay = Constants.defaultGatewayDelay
 
-local net = require '@lune/net'
-local task = require '@lune/task'
-
-local Listen = require '../Listen'
-local Mutex = require '../Mutex'
-
---// Types
+local Component = require '../../Component'
 type Data = Component.Data
 
+local net = require '@lune/net'
 type Websocket = net.WebSocket
+
+local Listen = require '../Listen'
 type Listener = Listen.Listener
+
+local Mutex = require '../Mutex'
 type Mutex = Mutex.Mutex
 
+--// Types
 export type Socket = {
     send: (opcode: number, payload: any) -> (),
     open: () -> (),
